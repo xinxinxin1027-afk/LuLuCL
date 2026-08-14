@@ -16,7 +16,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -49,9 +48,8 @@ fun NavigationDrawerComponent(
 	onClickAnalytics: () -> Unit,
 	onClickSettings: () -> Unit,
 	onClickBackup: () -> Unit,
-	onClickRestore: () -> Unit
+	@Suppress("UNUSED_PARAMETER") onClickRestore: () -> Unit
 ) {
-
 	Column(
 		horizontalAlignment = Alignment.CenterHorizontally,
 		modifier = Modifier
@@ -60,7 +58,6 @@ fun NavigationDrawerComponent(
 			.verticalScroll(rememberScrollState())
 			.padding(vertical = 64.dp)
 	) {
-
 		Spacer(modifier = Modifier.height(50.dp))
 		Column(horizontalAlignment = Alignment.CenterHorizontally) {
 			Image(
@@ -89,15 +86,12 @@ fun NavigationDrawerComponent(
 		)
 
 		Column {
-
 			NavDrawerItemUI(
 				icon = Icons.Default.CalendarMonth,
 				label = stringResource(R.string.this_week)
 			) { onClickThisWeek() }
 
 			Spacer(modifier = Modifier.height(8.dp))
-
-			// Analytics hidden for 4.0; restore after the rework.
 
 			NavDrawerItemUI(
 				icon = Icons.Default.Settings,
@@ -108,31 +102,24 @@ fun NavigationDrawerComponent(
 
 			NavDrawerItemUI(
 				icon = Icons.Default.Backup,
-				label = "Backup"
+				label = stringResource(R.string.backup_data)
 			) { onClickBackup() }
-
-			Spacer(modifier = Modifier.height(8.dp))
-
-			NavDrawerItemUI(
-				icon = Icons.Default.Restore,
-				label = "Restore"
-			) { onClickRestore() }
 
 			Divider(
 				modifier = Modifier.padding(vertical = 10.dp),
 				color = MaterialTheme.colorScheme.primaryContainer
 			)
 
-			NavDrawerItem.entries.forEach {
-				NavDrawerItemUI(icon = it.icon, label = stringResource(id = it.stringId)) {
-					onAction(MainAction.OnClickNavDrawerItem(it))
+			NavDrawerItem.entries
+				.filterNot { it == NavDrawerItem.REPORT_BUGS }
+				.forEach {
+					NavDrawerItemUI(icon = it.icon, label = stringResource(id = it.stringId)) {
+						onAction(MainAction.OnClickNavDrawerItem(it))
+					}
+					Spacer(modifier = Modifier.height(8.dp))
 				}
-				Spacer(modifier = Modifier.height(8.dp))
-			}
 		}
-
 	}
-
 }
 
 @Composable
