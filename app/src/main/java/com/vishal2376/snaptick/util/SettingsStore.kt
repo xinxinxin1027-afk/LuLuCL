@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import java.time.LocalTime
 
-
 class SettingsStore(val context: Context) {
 
 	companion object {
@@ -38,13 +37,12 @@ class SettingsStore(val context: Context) {
 		private val BUILD_VERSION_CODE = intPreferencesKey("build_version_code")
 		private val SWIPE_BEHAVIOUR_KEY = intPreferencesKey("swipe_behaviour_key")
 		private val CALENDAR_SYNC_ENABLED_KEY = booleanPreferencesKey("calendar_sync_enabled_key")
-		private val CALENDAR_SYNC_CALENDAR_ID_KEY =
-			stringPreferencesKey("calendar_sync_calendar_id_key")
+		private val CALENDAR_SYNC_CALENDAR_ID_KEY = stringPreferencesKey("calendar_sync_calendar_id_key")
 		private val ONBOARDING_COMPLETED_KEY = booleanPreferencesKey("onboarding_completed_key")
 		private val SOUND_ENABLED_KEY = booleanPreferencesKey("sound_enabled_key")
 		private val LAST_UPDATE_CHECK_AT_KEY = longPreferencesKey("last_update_check_at_key")
 
-		private const val DEFAULT_LANGUAGE = "en"
+		private const val DEFAULT_LANGUAGE = "zh"
 		private val DEFAULT_THEME = AppTheme.Amoled.ordinal
 		private const val DEFAULT_DYNAMIC_THEME = false
 		private const val DEFAULT_TIME_PICKER_KEY = true
@@ -58,11 +56,9 @@ class SettingsStore(val context: Context) {
 		private const val DEFAULT_BUILD_VERSION_CODE = 1
 		private val DEFAULT_SWIPE_BEHAVIOUR = SwipeBehavior.DELETE.ordinal
 		private const val DEFAULT_CALENDAR_SYNC_ENABLED = false
-		private const val DEFAULT_CALENDAR_SYNC_CALENDAR_ID = ""
 		private const val DEFAULT_ONBOARDING_COMPLETED = false
 		private const val DEFAULT_SOUND_ENABLED = true
 	}
-
 
 	val themeKey: Flow<Int> = context.dataStore.data.map { preferences ->
 		preferences[THEME_KEY] ?: DEFAULT_THEME
@@ -139,81 +135,55 @@ class SettingsStore(val context: Context) {
 	}
 
 	suspend fun setTheme(theme: Int) {
-		context.dataStore.edit { preferences ->
-			preferences[THEME_KEY] = theme
-		}
+		context.dataStore.edit { preferences -> preferences[THEME_KEY] = theme }
 	}
 
 	suspend fun setDynamicTheme(isEnabled: Boolean) {
-		context.dataStore.edit { preferences ->
-			preferences[DYNAMIC_THEME_KEY] = isEnabled
-		}
+		context.dataStore.edit { preferences -> preferences[DYNAMIC_THEME_KEY] = isEnabled }
 	}
 
 	suspend fun setTimePicker(isWheelTimePicker: Boolean) {
-		context.dataStore.edit { preferences ->
-			preferences[TIME_PICKER_KEY] = isWheelTimePicker
-		}
+		context.dataStore.edit { preferences -> preferences[TIME_PICKER_KEY] = isWheelTimePicker }
 	}
 
 	suspend fun setTimeFormat(is24hourFormat: Boolean) {
-		context.dataStore.edit { preferences ->
-			preferences[TIME_FORMAT_KEY] = is24hourFormat
-		}
+		context.dataStore.edit { preferences -> preferences[TIME_FORMAT_KEY] = is24hourFormat }
 	}
 
 	suspend fun setLanguage(language: String) {
-		context.dataStore.edit { preferences ->
-			preferences[LANGUAGE_KEY] = language
-		}
+		context.dataStore.edit { preferences -> preferences[LANGUAGE_KEY] = language }
 	}
 
 	suspend fun setSleepTime(time: String) {
-		context.dataStore.edit { preferences ->
-			preferences[SLEEP_TIME_KEY] = time
-		}
+		context.dataStore.edit { preferences -> preferences[SLEEP_TIME_KEY] = time }
 	}
 
 	suspend fun setSortTask(sortTask: Int) {
-		context.dataStore.edit { preferences ->
-			preferences[SORT_TASK_KEY] = sortTask
-		}
+		context.dataStore.edit { preferences -> preferences[SORT_TASK_KEY] = sortTask }
 	}
 
 	suspend fun setCalenderView(calenderView: Int) {
-		context.dataStore.edit { preferences ->
-			preferences[CALENDER_VIEW_KEY] = calenderView
-		}
+		context.dataStore.edit { preferences -> preferences[CALENDER_VIEW_KEY] = calenderView }
 	}
 
 	suspend fun setLastOpened(lastOpened: String) {
-		context.dataStore.edit { preferences ->
-			preferences[LAST_OPENED_KEY] = lastOpened
-		}
+		context.dataStore.edit { preferences -> preferences[LAST_OPENED_KEY] = lastOpened }
 	}
 
 	suspend fun setStreak(streak: Int) {
-		context.dataStore.edit { preferences ->
-			preferences[STREAK_KEY] = streak
-		}
+		context.dataStore.edit { preferences -> preferences[STREAK_KEY] = streak }
 	}
 
 	suspend fun setShowWhatsNew(showWhatsNew: Boolean) {
-		context.dataStore.edit { preferences ->
-			preferences[SHOW_WHATS_NEW_KEY] = showWhatsNew
-		}
+		context.dataStore.edit { preferences -> preferences[SHOW_WHATS_NEW_KEY] = showWhatsNew }
 	}
 
 	suspend fun setBuildVersionCode(versionCode: Int) {
-		context.dataStore.edit { preferences ->
-			preferences[BUILD_VERSION_CODE] = versionCode
-		}
+		context.dataStore.edit { preferences -> preferences[BUILD_VERSION_CODE] = versionCode }
 	}
 
 	suspend fun setSwipeBehaviour(swipeBehaviour: Int) {
-		context.dataStore.edit { preferences ->
-			preferences[SWIPE_BEHAVIOUR_KEY] = swipeBehaviour
-		}
+		context.dataStore.edit { preferences -> preferences[SWIPE_BEHAVIOUR_KEY] = swipeBehaviour }
 	}
 
 	suspend fun setCalendarSyncEnabled(enabled: Boolean) {
@@ -238,6 +208,4 @@ class SettingsStore(val context: Context) {
 	suspend fun setLastUpdateCheckAt(epochMillis: Long) {
 		context.dataStore.edit { it[LAST_UPDATE_CHECK_AT_KEY] = epochMillis }
 	}
-
 }
-
