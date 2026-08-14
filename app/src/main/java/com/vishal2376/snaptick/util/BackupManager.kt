@@ -27,7 +27,7 @@ class BackupManager @Inject constructor(
 		.registerTypeAdapter(LocalTime::class.java, LocalTimeAdapter())
 		.create()
 
-	private fun backupFileName(): String = "Snaptick_Backup_${LocalDate.now()}.json"
+	private fun backupFileName(): String = "LuluCalendar_Backup_${LocalDate.now()}.json"
 
 	suspend fun createBackup(uri: Uri, data: BackupData): Boolean {
 		return withContext(Dispatchers.IO) {
@@ -48,10 +48,6 @@ class BackupManager @Inject constructor(
 		return withContext(Dispatchers.IO) {
 			try {
 				context.contentResolver.openInputStream(uri)?.use { inputStream ->
-					// Strict (non-lenient) reader rejects malformed JSON early
-					// instead of silently swallowing comments, single quotes,
-					// trailing commas etc. Combined with MainViewModel's task
-					// count cap, this bounds the parser's blast radius.
 					val reader = JsonReader(inputStream.bufferedReader())
 					reader.isLenient = false
 					reader.use { gson.fromJson<BackupData>(it, BackupData::class.java) }
