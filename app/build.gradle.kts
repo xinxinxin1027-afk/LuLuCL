@@ -17,24 +17,22 @@ android {
 	namespace = "com.vishal2376.snaptick"
 	compileSdk = 36
 
-	// Google-key-encrypted block only Google can verify; F-Droid/IzzyOnDroid reject it.
 	dependenciesInfo {
 		includeInApk = false
 		includeInBundle = false
 	}
 
 	defaultConfig {
-		applicationId = "com.vishal2376.snaptick"
+		applicationId = "com.xinxinxin1027.lulucalendar"
 		minSdk = 26
 		targetSdk = 36
-		versionCode = 14
-		versionName = "4.2"
+		versionCode = 1
+		versionName = "0.0.1"
 
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 		vectorDrawables {
 			useSupportLibrary = true
 		}
-
 	}
 
 	signingConfigs {
@@ -46,10 +44,10 @@ android {
 					?.takeIf { it.isNotBlank() }
 			}
 
-			val ksPath = signingProp("SNAPTICK_KEYSTORE_FILE")
-			val ksPassword = signingProp("SNAPTICK_KEYSTORE_PASSWORD")
-			val kAlias = signingProp("SNAPTICK_KEY_ALIAS")
-			val kPassword = signingProp("SNAPTICK_KEY_PASSWORD")
+			val ksPath = signingProp("LULUCALENDAR_KEYSTORE_FILE")
+			val ksPassword = signingProp("LULUCALENDAR_KEYSTORE_PASSWORD")
+			val kAlias = signingProp("LULUCALENDAR_KEY_ALIAS")
+			val kPassword = signingProp("LULUCALENDAR_KEY_PASSWORD")
 
 			val ksFile = ksPath?.let { file(it) }?.takeIf { it.exists() }
 			if (ksFile != null && ksPassword != null && kAlias != null && kPassword != null) {
@@ -68,17 +66,14 @@ android {
 				getDefaultProguardFile("proguard-android-optimize.txt"),
 				"proguard-rules.pro"
 			)
-			// Only attach the signing config when a keystore is actually wired.
-			// Reproducible-build verifiers (IzzyOnDroid, F-Droid) build without
-			// one and need an unsigned APK to drop out of this task.
 			signingConfigs.getByName("release").storeFile?.let {
 				signingConfig = signingConfigs.getByName("release")
 			}
 		}
 
 		debug {
-			applicationIdSuffix = ".debug"
-			versionNameSuffix = "-debug"
+			// Keep the same application ID/version name so CI debug APKs are
+			// directly installable as LuluCalendar v0.0.1.
 		}
 	}
 
@@ -113,14 +108,9 @@ android {
 		unitTests.isReturnDefaultValues = true
 	}
 
-	// Expose Room schemas to androidTest for MigrationTestHelper.
 	sourceSets.getByName("androidTest").assets.srcDirs("$projectDir/schemas")
 }
 
-// Fail-fast keystore guard, gated to CI only so reproducible-build verifiers
-// (IzzyOnDroid, F-Droid) can run `assembleRelease` against an unsigned APK
-// without tripping a hard require(). Locally and in RB land the build just
-// produces an unsigned APK.
 val isCiBuild = System.getenv("CI") == "true" ||
 	System.getenv("GITHUB_ACTIONS") == "true"
 if (isCiBuild) gradle.taskGraph.whenReady {
@@ -135,7 +125,7 @@ if (isCiBuild) gradle.taskGraph.whenReady {
 	val storeFile = sc.storeFile
 	val alias = sc.keyAlias
 	require(storeFile != null && storeFile.exists()) {
-		"Release keystore not configured. Set SNAPTICK_KEYSTORE_FILE in CI env."
+		"Release keystore not configured. Set LULUCALENDAR_KEYSTORE_FILE in CI env."
 	}
 	require(alias != null && alias != "androiddebugkey") {
 		"Refusing to sign release with the public Android debug key alias."
@@ -179,10 +169,6 @@ dependencies {
 	//material icons extended
 	implementation("androidx.compose.material:material-icons-extended:1.5.4")
 
-	//acra - crash reports
-	implementation("ch.acra:acra-mail:5.11.3")
-	implementation("ch.acra:acra-dialog:5.11.3")
-
 	//work manager
 	implementation("androidx.work:work-runtime-ktx:2.9.0")
 
@@ -201,10 +187,10 @@ dependencies {
 	//analytics charts
 	implementation("io.github.ehsannarmani:compose-charts:0.0.18")
 
-	//widget
+	//widget implementation is kept temporarily for source compatibility;
+	// the app widget receiver is disabled in the manifest for LuluCalendar.
 	implementation("androidx.glance:glance-appwidget:1.1.1")
 	implementation("androidx.glance:glance-material3:1.1.1")
-
 
 	testImplementation("junit:junit:4.13.2")
 	testImplementation("app.cash.turbine:turbine:1.1.0")
