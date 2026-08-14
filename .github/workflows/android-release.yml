@@ -12,6 +12,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      SIGNING_READY: ${{ secrets.LULUCALENDAR_KEYSTORE_BASE64 != '' && secrets.LULUCALENDAR_KEYSTORE_PASSWORD != '' && secrets.LULUCALENDAR_KEY_ALIAS != '' && secrets.LULUCALENDAR_KEY_PASSWORD != '' }}
 
     steps:
       - name: Checkout
@@ -33,11 +35,34 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 
-      - name: Build debug APK
+      - name: Restore LuluCalendar signing key
+        if: env.SIGNING_READY == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.LULUCALENDAR_KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/lulucalendar-signing"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/lulucalendar-signing/LuluCalendar-release.jks"
+
+      - name: Build signed release APK
+        if: env.SIGNING_READY == 'true'
+        env:
+          LULUCALENDAR_KEYSTORE_FILE: ${{ runner.temp }}/lulucalendar-signing/LuluCalendar-release.jks
+          LULUCALENDAR_KEYSTORE_PASSWORD: ${{ secrets.LULUCALENDAR_KEYSTORE_PASSWORD }}
+          LULUCALENDAR_KEY_ALIAS: ${{ secrets.LULUCALENDAR_KEY_ALIAS }}
+          LULUCALENDAR_KEY_PASSWORD: ${{ secrets.LULUCALENDAR_KEY_PASSWORD }}
+        run: ./gradlew :app:assembleRelease --stacktrace
+
+      - name: Build debug APK fallback
+        if: env.SIGNING_READY != 'true'
         run: ./gradlew :app:assembleDebug --stacktrace
 
       - name: Prepare APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk LuluCalendar-v0.0.1.apk
+        run: |
+          if [ "$SIGNING_READY" = "true" ]; then
+            cp app/build/outputs/apk/release/app-release.apk LuluCalendar-v0.0.1.apk
+          else
+            cp app/build/outputs/apk/debug/app-debug.apk LuluCalendar-v0.0.1.apk
+          fi
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -57,5 +82,5 @@ jobs:
             gh release create v0.0.1 LuluCalendar-v0.0.1.apk \
               --target "$GITHUB_SHA" \
               --title "LuluCalendar v0.0.1" \
-              --notes "LuluCalendar 首个定制版本：默认中文，并移除 Restore、错误报告、支持、桌面 Widget、设备日历同步与事件导入功能。"
+              --notes "LuluCalendar v0.0.1"
           fi
