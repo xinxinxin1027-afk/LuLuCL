@@ -1,130 +1,43 @@
-<div align="center">
+# LuluCalendar
 
-<img src="https://github.com/vishal2376/snaptick/assets/38159691/099fd345-4a63-4916-845c-065b31b6e381" width="100px"/>
+LuluCalendar 是一个基于 Kotlin 与 Jetpack Compose 的开源 Android 日程与任务管理应用。
 
-# **Snaptick**
+当前版本：**v0.0.1**
 
-Snaptick is a free daily task planner app designed to help users increase productivity. With an
-easy-to-use interface and features like a pomodoro timer, users can easily organize and achieve
-their daily plans
+## 功能
 
-<br/>
+- 每日任务与日历视图
+- 任务开始/结束时间与优先级
+- 重复任务与提醒
+- 番茄钟
+- 空闲时间分析
+- 本地 JSON 数据备份
+- 多主题与动态主题
+- 多语言，默认语言为中文
 
+## v0.0.1 定制变化
 
-<a href="https://twitter.com/vishal2376"><img src="https://img.shields.io/badge/twitter-%231DA1F2.svg?&style=for-the-badge&logo=twitter&logoColor=white" /></a>
-<a href="https://discord.gg/t4VhMAjV7a"><img src="https://img.shields.io/badge/Join Discord-blue?style=for-the-badge&color=7289da&logo=discord&logoColor=white" /></a>
+- 应用品牌更名为 **LuluCalendar**
+- 默认语言改为中文
+- 移除 Restore 恢复入口与崩溃报告功能
+- 移除设置中的“支持”入口
+- 移除桌面 Widget 入口与系统注册
+- 移除设备日历同步入口与系统日历权限
+- 移除 ICS / Import events 导入入口
+- GitHub Actions 自动编译 APK，并在发布提交时创建 GitHub Release
 
-<img src="https://img.shields.io/github/stars/vishal2376/snaptick?style=for-the-badge&logo=powerpages&color=cba6f7&logoColor=D9E0EE&labelColor=302D41"/>
-<img src="https://img.shields.io/github/last-commit/vishal2376/snaptick?style=for-the-badge&logo=github&color=a6da95&logoColor=D9E0EE&labelColor=302D41"/>
-<img src="https://img.shields.io/github/repo-size/vishal2376/snaptick?style=for-the-badge&logo=dropbox&color=7dc4e4&logoColor=D9E0EE&labelColor=302D41"/>
+## 构建
 
-<br/>
-<br/>
-
-<div style="display: flex; flex-direction: row;">
-    <a href='https://apt.izzysoft.de/fdroid/index/apk/com.vishal2376.snaptick'><img alt='Get it on IzzyOnDroid' src='https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png' style="width:200px"></a>
-    <a href='https://github.com/vishal2376/snaptick/releases/latest'><img alt='Get it on Github' src='https://github.com/vishal2376/snaptick/assets/38159691/f502e2ec-dbf4-4ed6-b23f-a47b74080fea' style="width:200px"></a>
-</div>
-
-</div>
-<br>
-<h3 align="center">❤️ Support Development</h3>
-<p align="center">
-    <a href="https://nowpayments.io/donation?api_key=J8D6KV4-FJ7M181-QKRCGV3-6MMDNZT&source=lk_donation&medium=referral" target="_blank">
-     <img src="https://nowpayments.io/images/embeds/donation-button-black.svg" width="150px" alt="Crypto donation button by NOWPayments">
-    </a>
-</p>
-
-<p align="center">
-  <a href="https://ko-fi.com/vishal2376"><img src="https://img.shields.io/badge/Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white" /></a>&nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="https://buymeacoffee.com/vishal2376"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" /></a>&nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="https://paypal.me/vishal2376"><img src="https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white" /></a>&nbsp;&nbsp;&nbsp;&nbsp;
-
-</p>
-
-## 🚀 Features
-
-- 📝 **Create and Edit Tasks**
-- ⏲️ **Pomodoro Timer**
-- 🔔 **Multiple Reminders**
-- 🧩 **Home-screen Widget**
-- 🗓️ **Calendar Sync & ICS Import**
-- 💾 **Backup & Restore**
-- 🔄 **Customizable Swipe Actions**
-- ⏰ **Analyze Free Time**
-- 😴 **Set Sleep Time**
-- 🗓️ **Manage tasks in Calendar View**
-- 🎨 **Material Dynamic Theme Support**
-- 🔁 **Repeatable Tasks with Notification**
-- 🎬 **Smooth Animations**
-- 🎨 **Modern UI with Cool Themes**
-- 🌐 **Available in 15+ Languages**
-- 🆙 **In-app Update Checker**
-
-## Screenshots ([All Designs(Figma)](https://www.figma.com/file/fO6pafK7iAJMZDAtjOy1Mt/Snaptick-App-UI?type=design&node-id=0%3A1&mode=design&t=071Ijr8Yg44PVvmz-1))
-
-[![Banner](https://github.com/vishal2376/snaptick/assets/38159691/45cb1cda-a97d-4889-8734-12dee3df9ace)](https://youtube.com/shorts/iEx2ttL3BH4)
-
-## Getting Started
-
-Snaptick is distributed via GitHub Releases. Grab the latest signed APK from
-[the Releases page](https://github.com/vishal2376/snaptick/releases/latest)
-or build it yourself from source.
-
-### Prerequisites
-
-- Android Studio
-- Git
-
-### Building from source
-
-1. Clone the repository: `git clone https://github.com/vishal2376/snaptick.git`
-2. Open the project in Android Studio.
-3. Build and run the **debug** variant. The release variant requires a
-   signing keystore (see "Releasing" below) — you don't need one for normal
-   development.
-
-### Releasing (maintainer-only)
-
-Release builds require a real signing keystore. The repo carries no keystore;
-each maintainer wires their own via `local.properties`:
-
-```properties
-SNAPTICK_KEYSTORE_FILE=/absolute/path/to/your-release.jks
-SNAPTICK_KEYSTORE_PASSWORD=...
-SNAPTICK_KEY_ALIAS=...
-SNAPTICK_KEY_PASSWORD=...
+```bash
+./gradlew :app:assembleDebug
 ```
 
-`./gradlew :app:assembleRelease` will fail-fast if the keystore env is
-missing or if the alias is the public Android debug key — the build refuses
-to produce a debug-signed release APK.
+APK 输出位置：
 
-1. Clone the repository
-   ``` git clone https://github.com/vishal2376/snaptick.git ```
-2. Open the project in Android Studio
-3. Build and run the app
-
-## Contributing
-
-We welcome contributions from anyone interested in helping to improve Snaptick! Feel free to submit
-a pull request or open an issue if you notice any bugs or have suggestions for new features.
-
-## Star History
-
-<a href="https://star-history.com/#vishal2376/snaptick&Timeline">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=vishal2376/snaptick&type=Timeline&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=vishal2376/snaptick&type=Timeline" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=vishal2376/snaptick&type=Timeline" />
- </picture>
-</a>
+```text
+app/build/outputs/apk/debug/app-debug.apk
+```
 
 ## License
 
-This project is licensed under the GPL v3.0 License - see the [LICENSE](LICENSE) file for details.
-
-## Credits
-
-App Icon created by <a href="https://www.flaticon.com/free-icons/task" title="task icons">
-icon_small - Flaticon</a>
+本项目继续遵循仓库中的 GNU GPL v3.0 许可证。

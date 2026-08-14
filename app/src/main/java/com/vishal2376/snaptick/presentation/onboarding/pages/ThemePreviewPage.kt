@@ -51,7 +51,6 @@ fun ThemePreviewPage(
 	val initialDemos = remember { demoTasks() }
 	var demoOrder by remember { mutableStateOf(initialDemos) }
 
-	// Skip the initial firing so landing on the page doesn't shuffle.
 	var primed by remember { mutableStateOf(false) }
 	LaunchedEffect(selectedTheme) {
 		if (!primed) {
@@ -68,7 +67,7 @@ fun ThemePreviewPage(
 		horizontalAlignment = Alignment.CenterHorizontally
 	) {
 		Text(
-			text = "Choose your Theme",
+			text = "选择你的主题",
 			style = h1TextStyle,
 			color = MaterialTheme.colorScheme.onBackground,
 			textAlign = TextAlign.Center
@@ -78,7 +77,7 @@ fun ThemePreviewPage(
 			modifier = Modifier
 				.fillMaxWidth()
 				.padding(horizontal = 8.dp),
-			text = "Tap a theme below to see how Snaptick looks.",
+			text = "点击下面的主题，预览 LuluCalendar 的效果。",
 			style = infoDescTextStyle,
 			color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f),
 			textAlign = TextAlign.Center
@@ -92,8 +91,6 @@ fun ThemePreviewPage(
 				verticalArrangement = Arrangement.spacedBy(8.dp)
 			) {
 				itemsIndexed(demoOrder, key = { _, task -> task.uuid }) { index, task ->
-					// Stable uuid keys keep composition across theme taps, so
-					// the entry cascade fires only on first appearance.
 					StaggeredEntry(
 						index = index,
 						modifier = Modifier.animateItemPlacement(
@@ -123,7 +120,6 @@ fun ThemePreviewPage(
 	}
 }
 
-// Slide-up + fade-in once on first composition. Mirrors WelcomePage's FeatureRow.
 @Composable
 private fun StaggeredEntry(
 	index: Int,
@@ -155,29 +151,29 @@ private fun StaggeredEntry(
 
 private fun demoTasks(): List<Task> = listOf(
 	Task(
-		id = 1, uuid = "demo-1", title = "Morning run",
+		id = 1, uuid = "demo-1", title = "晨间跑步",
 		startTime = LocalTime.of(6, 30), endTime = LocalTime.of(7, 15),
 		reminder = true, date = LocalDate.now(), priority = 2,
 		isRepeated = true, repeatWeekdays = "0,2,4"
 	),
 	Task(
-		id = 2, uuid = "demo-2", title = "Design review",
+		id = 2, uuid = "demo-2", title = "设计复盘",
 		startTime = LocalTime.of(10, 0), endTime = LocalTime.of(11, 0),
 		reminder = true, date = LocalDate.now(), priority = 1
 	),
 	Task(
-		id = 3, uuid = "demo-3", title = "Team standup",
+		id = 3, uuid = "demo-3", title = "团队晨会",
 		startTime = LocalTime.of(9, 30), endTime = LocalTime.of(9, 45),
 		reminder = true, date = LocalDate.now(), priority = 1,
 		isRepeated = true, repeatWeekdays = "0,1,2,3,4"
 	),
 	Task(
-		id = 4, uuid = "demo-4", title = "Read 30 pages",
+		id = 4, uuid = "demo-4", title = "阅读 30 页",
 		startTime = LocalTime.of(21, 0), endTime = LocalTime.of(21, 45),
 		date = LocalDate.now(), priority = 0
 	),
 	Task(
-		id = 5, uuid = "demo-5", title = "Weekend planning",
+		id = 5, uuid = "demo-5", title = "周末计划",
 		startTime = LocalTime.of(11, 0), endTime = LocalTime.of(11, 30),
 		reminder = true, date = LocalDate.now(), priority = 0,
 		isRepeated = true, repeatWeekdays = "5,6"

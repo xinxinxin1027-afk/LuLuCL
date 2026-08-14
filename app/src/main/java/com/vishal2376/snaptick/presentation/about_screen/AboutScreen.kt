@@ -54,7 +54,7 @@ fun AboutScreen(
 	onBack: () -> Unit
 ) {
 	val context = LocalContext.current
-	val repoUrl = "${Constants.GITHUB}/snaptick"
+	val repoUrl = Constants.GITHUB
 
 	Scaffold(topBar = {
 		TopAppBar(
@@ -77,11 +77,11 @@ fun AboutScreen(
 			},
 		)
 	}) { innerPadding ->
-
 		Column(
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(innerPadding), verticalArrangement = Arrangement.spacedBy(16.dp)
+				.padding(innerPadding),
+			verticalArrangement = Arrangement.spacedBy(16.dp)
 		) {
 			Column(
 				modifier = Modifier.fillMaxWidth(),
@@ -118,9 +118,7 @@ fun AboutScreen(
 				text = stringResource(R.string.source_code),
 				modifier = Modifier
 					.fillMaxWidth()
-					.clickable {
-						openUrl(context, repoUrl)
-					},
+					.clickable { openUrl(context, repoUrl) },
 				fontStyle = FontStyle.Italic,
 				style = taskTextStyle,
 				textDecoration = TextDecoration.Underline,

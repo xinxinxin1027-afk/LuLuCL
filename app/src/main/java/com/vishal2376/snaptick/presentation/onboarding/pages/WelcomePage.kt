@@ -61,27 +61,27 @@ fun WelcomePage(currentTheme: AppTheme) {
 		listOf(
 			WelcomeFeature(
 				R.drawable.ic_task_list, R.string.create_and_edit_tasks,
-				"Plan your day with start, end, priority", Blue
+				"规划一天中的开始时间、结束时间与优先级", Blue
 			),
 			WelcomeFeature(
 				R.drawable.ic_timer, R.string.pomodoro_timer,
-				"Built-in focus timer for every task", Red
+				"为每个任务提供专注计时", Red
 			),
 			WelcomeFeature(
 				R.drawable.ic_refresh, R.string.repeatable_tasks_with_notification,
-				"Daily / weekly habits with reminders", Yellow
+				"支持每日/每周重复任务与提醒", Yellow
 			),
 			WelcomeFeature(
 				R.drawable.ic_calendar_sync, R.string.manage_tasks_in_calendar_view,
-				"See your week and month at a glance", LightGreen
+				"按周或按月查看自己的安排", LightGreen
 			),
 			WelcomeFeature(
 				R.drawable.ic_theme, R.string.modern_ui_with_cool_themes,
-				"Light, Dark, and battery-friendly Amoled", DarkGreen
+				"支持浅色、深色和 AMOLED 主题", DarkGreen
 			),
 			WelcomeFeature(
 				R.drawable.ic_translate, R.string.available_in_15_languages,
-				"Use Snaptick in your language", Blue
+				"用你熟悉的语言使用 LuluCalendar", Blue
 			),
 		)
 	}
@@ -154,12 +154,8 @@ private fun Staggered(
 		val delayMs = index.coerceAtMost(SnaptickMotion.MAX_STAGGERED_ITEMS) * 110L
 		if (delayMs > 0) delay(delayMs)
 		coroutineScope {
-			launch {
-				alpha.animateTo(1f, tween(520, easing = FastOutSlowInEasing))
-			}
-			launch {
-				translate.animateTo(0f, tween(560, easing = FastOutSlowInEasing))
-			}
+			launch { alpha.animateTo(1f, tween(520, easing = FastOutSlowInEasing)) }
+			launch { translate.animateTo(0f, tween(560, easing = FastOutSlowInEasing)) }
 		}
 	}
 
@@ -247,4 +243,3 @@ private fun FeatureRow(
 		}
 	}
 }
-

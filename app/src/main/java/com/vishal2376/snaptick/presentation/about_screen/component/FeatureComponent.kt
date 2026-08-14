@@ -24,12 +24,13 @@ fun FeaturesComponent(modifier: Modifier = Modifier) {
 	Column(
 		modifier = modifier
 			.padding(32.dp, 0.dp)
-			.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)
+			.verticalScroll(rememberScrollState()),
+		verticalArrangement = Arrangement.spacedBy(8.dp)
 	) {
 		FeatureItem(icon = "📝", text = stringResource(R.string.create_and_edit_tasks))
 		FeatureItem(icon = "⏲️", text = stringResource(R.string.pomodoro_timer))
 		FeatureItem(icon = "🔄", text = stringResource(R.string.sort_tasks))
-		FeatureItem(icon = "💾", text = stringResource(R.string.backup_restore_data))
+		FeatureItem(icon = "💾", text = stringResource(R.string.backup_data))
 		FeatureItem(icon = "⏰", text = stringResource(R.string.analyze_free_time))
 		FeatureItem(icon = "😴", text = stringResource(R.string.set_sleep_time))
 		FeatureItem(icon = "🗓️", text = stringResource(R.string.manage_tasks_in_calendar_view))
@@ -37,7 +38,6 @@ fun FeaturesComponent(modifier: Modifier = Modifier) {
 		FeatureItem(icon = "🎬", text = stringResource(R.string.smooth_animations))
 		FeatureItem(icon = "🎨", text = stringResource(R.string.modern_ui_with_cool_themes))
 		FeatureItem(icon = "🌐", text = stringResource(R.string.available_in_15_languages))
-		FeatureItem(icon = "🧩", text = stringResource(R.string.create_widgets))
 	}
 }
 

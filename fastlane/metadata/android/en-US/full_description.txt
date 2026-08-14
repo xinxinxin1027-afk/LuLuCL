@@ -1,27 +1,5 @@
-Introducing Snaptick – Your Simple and Free Daily Task Planner!
+LuluCalendar is an open-source Android task and schedule planner built with Kotlin and Jetpack Compose.
 
-Snaptick is a user-friendly app designed to boost your productivity by helping you organize and achieve your daily plans effortlessly. With a clean and easy-to-use interface, this app offers essential features like task creation and editing, task prioritization, a built-in Pomodoro Timer, sorting options, task analysis, and reminder notifications.
+Features include daily task planning, calendar views, recurring tasks, reminders, a Pomodoro timer, free-time analysis, local backups, multiple themes, and multilingual support.
 
-******************************Features******************************
-
-* 📝 Create and Edit Tasks
-* ⏲️ Pomodoro Timer
-* 🔔 Multiple Reminders
-* 🧩 Home-screen Widget
-* 🗓️ Calendar Sync & ICS Import
-* 💾 Backup & Restore
-* 🔄 Customizable Swipe Actions
-* ⏰ Analyze Free Time
-* 😴 Set Sleep Time
-* 🗓️ Manage tasks in Calendar View
-* 🎨 Material Dynamic Theme Support
-* 🔁 Repeatable Tasks with Notification
-* 🎬 Smooth Animations
-* 🎨 Modern UI with Cool Themes
-* 🌐 Available in 15+ Languages
-* 🆙 In-app Update Checker (opt-in, manual check from Settings)
-
-Download Snaptick now and simplify your daily planning. Boost your productivity with a clutter-free, ad-free, and efficient task planner that adapts to your unique style. Start your journey to increased productivity today!
-
-Credits
-App Logo Icon created by "icon_small" from www.flaticon.com
+LuluCalendar v0.0.1 defaults to Chinese and intentionally removes crash reporting, restore, home-screen widget registration, device-calendar sync, and event import features.

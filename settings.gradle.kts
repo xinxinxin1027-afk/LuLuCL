@@ -14,6 +14,6 @@ dependencyResolutionManagement {
 	}
 }
 
-rootProject.name = "Snaptick"
+rootProject.name = "LuluCalendar"
 include(":app")
 include(":wheel-picker")

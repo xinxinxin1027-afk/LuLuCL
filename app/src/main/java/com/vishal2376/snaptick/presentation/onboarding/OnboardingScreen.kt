@@ -35,7 +35,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.vishal2376.snaptick.R
 import com.vishal2376.snaptick.data.calendar.CalendarInfo
 import com.vishal2376.snaptick.presentation.common.taskTextStyle
 import com.vishal2376.snaptick.presentation.main.action.MainAction
@@ -82,7 +84,6 @@ fun OnboardingScreen(
 			.fillMaxSize()
 			.background(MaterialTheme.colorScheme.background)
 	) {
-		// Skip button
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
@@ -91,7 +92,7 @@ fun OnboardingScreen(
 		) {
 			TextButton(onClick = onFinish) {
 				Text(
-					text = "Skip",
+					text = stringResource(R.string.skip),
 					style = taskTextStyle,
 					color = MaterialTheme.colorScheme.onPrimaryContainer
 				)
@@ -126,7 +127,6 @@ fun OnboardingScreen(
 			}
 		}
 
-		// Page indicators
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
@@ -156,7 +156,6 @@ fun OnboardingScreen(
 			}
 		}
 
-		// CTA - always visible
 		val isLastPage = pagerState.currentPage == TOTAL_PAGES - 1
 		val view = LocalView.current
 
@@ -184,7 +183,8 @@ fun OnboardingScreen(
 			shape = RoundedCornerShape(16.dp)
 		) {
 			Text(
-				text = if (isLastPage) "Get started" else "Next",
+				text = if (isLastPage) stringResource(R.string.get_started)
+				else stringResource(R.string.next),
 				style = taskTextStyle,
 				modifier = Modifier.padding(6.dp)
 			)

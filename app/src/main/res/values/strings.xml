@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Snaptick</string>
+    <string name="app_name" translatable="false">LuluCalendar</string>
     <string name="today_tasks">Today Tasks</string>
     <string name="what_would_you_like_to_do">What would you like to do ?</string>
     <string name="edit_task">Edit Task</string>
@@ -7,9 +7,9 @@
     <string name="update_task">Update Task</string>
     <string name="select">Select</string>
     <string name="completed">Completed</string>
-    <string name="dialog_text">Sorry, An unexpected error occurred.\n\nDo you want to send a crash report to the developer?</string>
-    <string name="dialog_title">Crash Report</string>
-    <string name="dialog_positive">Send</string>
+    <string name="dialog_text">Sorry, an unexpected error occurred.</string>
+    <string name="dialog_title">Error</string>
+    <string name="dialog_positive">OK</string>
     <string name="dialog_negative">Cancel</string>
     <string name="report_bug">Report Bug</string>
     <string name="suggestions">Suggestions</string>
@@ -43,7 +43,7 @@
     <string name="start_time_latest_at_top">Start Time (Latest at Top)</string>
     <string name="creation_time_latest_at_bottom">Creation Time (Latest at Bottom)</string>
     <string name="creation_time_latest_at_top">Creation Time (Latest at Top)</string>
-    <string name="calender">Calender</string>
+    <string name="calender">Calendar</string>
     <string name="today">Today</string>
     <string name="selected_date">Selected Date</string>
     <string name="tasks_added_successfully">Tasks Added Successfully</string>
@@ -65,7 +65,7 @@
     <string name="scroll">Scroll</string>
     <string name="set_sleep_time">Set Sleep Time</string>
     <string name="min_max">Min - %1$s \t\t Max - %2$s</string>
-    <string name="select_language" translatable="false">Select Language</string>
+    <string name="select_language">Select Language</string>
 
     <string name="unchecked_circle_desc" translatable="false">Unchecked Circle</string>
     <string name="glance_preview_task_1" translatable="false">Task 1</string>
@@ -73,7 +73,7 @@
     <string name="glance_preview_task_3" translatable="false">Task 3</string>
     <string name="clock_icon_desc" translatable="false">Clock Icon</string>
     <string name="glance_preview_random_time" translatable="false">12:00am - 1:00pm</string>
-    <string name="app_description">Snaptick is an MVVM Jetpack Compose app, offering ad-free task management with a built-in pomodoro timer to help you organize your daily plans</string>
+    <string name="app_description">LuluCalendar is an MVVM Jetpack Compose app for ad-free daily task and schedule management with a built-in Pomodoro timer.</string>
     <string name="features">Features</string>
     <string name="source_code">Source Code</string>
     <string name="create_and_edit_tasks">Create and Edit Tasks</string>
@@ -91,7 +91,7 @@
     <string name="sounds">Sounds</string>
     <string name="check_for_updates">Updates</string>
     <string name="add_widget">Add Widget</string>
-    <string name="add_widget_unsupported">Your launcher doesn\'t support pinning widgets. Long-press your home screen to add it.</string>
+    <string name="add_widget_unsupported">Your launcher doesn\'t support pinning widgets.</string>
     <string name="analytics">Analytics</string>
     <string name="pomodoro_channel_name">Pomodoro Timer</string>
     <string name="pomodoro_complete">Pomodoro complete</string>
@@ -109,7 +109,8 @@
     <string name="update_available_with_version">v%1$s is available</string>
     <string name="open_in_browser">Open in browser</string>
     <string name="later">Later</string>
-    <string name="backup_restore_data">Backup/Restore Data</string>
+    <string name="backup_restore_data">Backup Data</string>
+    <string name="backup_data">Backup</string>
     <string name="material_you">Material You</string>
     <string name="disable_all_day_option">Disable All-Day Option</string>
     <string name="all_day">All Day</string>
@@ -131,4 +132,12 @@
     <string name="import_selected">Import selected</string>
     <string name="calendar_permission_required">Calendar permission is required</string>
     <string name="no_writable_calendars_found">No writable calendars found</string>
+
+    <string name="skip">Skip</string>
+    <string name="next">Next</string>
+    <string name="get_started">Get started</string>
+    <string name="onboarding_notifications_title">Notifications</string>
+    <string name="onboarding_notifications_description">Enable notifications so reminders and the Pomodoro timer can alert you on time.</string>
+    <string name="notifications_enabled">Notifications enabled</string>
+    <string name="enable_notifications">Enable notifications</string>
 </resources>
