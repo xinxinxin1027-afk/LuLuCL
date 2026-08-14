@@ -49,24 +49,17 @@ class MainActivity : ComponentActivity() {
 	lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
 	lateinit var icsPickerLauncher: ActivityResultLauncher<Intent>
 
-	/** Navigation destination from widget intent */
 	var widgetNavigateTo: String? = null
 		private set
 
-	/** Most recently picked `.ics` file URI; consumed by the import sheet. */
 	var lastPickedIcsUri: Uri? = null
-
-	/** When true, next .ics pick auto-imports all events instead of showing preview. */
 	var pendingIcsAutoImport: Boolean = false
-
-	/** Compose-observable notification-permission state. */
 	val notificationGrantedState = mutableStateOf(false)
 
 	override fun attachBaseContext(newBase: Context) {
-		// Apply persisted locale here; recreate() re-runs this on language change.
 		val lang = runCatching {
 			runBlocking { SettingsStore(newBase).languageKey.first() }
-		}.getOrDefault("en")
+		}.getOrDefault("zh")
 		super.attachBaseContext(LocaleHelper.setLocale(newBase, lang))
 	}
 
@@ -159,12 +152,6 @@ class MainActivity : ComponentActivity() {
 
 	private fun handleWidgetIntent(intent: Intent?) {
 		val raw = intent?.getStringExtra(EXTRA_NAVIGATE_TO)
-		// Allow widget routes (top-level only) and the Pomodoro deep-link
-		// (parameterized: "PomodoroScreen/<id>") used by the foreground-service
-		// notification. Anything else falls through to the default start
-		// destination. Without this allowlist a third-party app could craft an
-		// Intent(MAIN).putExtra("navigate_to", ...) to open a screen we never
-		// intended to expose externally.
 		widgetNavigateTo = when {
 			raw == null -> null
 			raw in WIDGET_ALLOWED_ROUTES -> raw
