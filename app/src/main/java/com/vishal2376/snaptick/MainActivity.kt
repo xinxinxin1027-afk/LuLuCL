@@ -37,132 +37,140 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-	private val mainViewModel by viewModels<MainViewModel>()
+    private val mainViewModel by viewModels<MainViewModel>()
 
-	@Inject
-	lateinit var backupManager: BackupManager
+    @Inject
+    lateinit var backupManager: BackupManager
 
-	private lateinit var notificationHelper: NotificationHelper
-	lateinit var backupPickerLauncher: ActivityResultLauncher<Intent>
-	lateinit var restorePickerLauncher: ActivityResultLauncher<Intent>
-	lateinit var calendarPermissionLauncher: ActivityResultLauncher<Array<String>>
-	lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
-	lateinit var icsPickerLauncher: ActivityResultLauncher<Intent>
+    private lateinit var notificationHelper: NotificationHelper
+    lateinit var backupPickerLauncher: ActivityResultLauncher<Intent>
+    lateinit var restorePickerLauncher: ActivityResultLauncher<Intent>
+    lateinit var calendarPermissionLauncher: ActivityResultLauncher<Array<String>>
+    lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
+    lateinit var icsPickerLauncher: ActivityResultLauncher<Intent>
 
-	var widgetNavigateTo: String? = null
-		private set
+    var widgetNavigateTo: String? = null
+        private set
 
-	var lastPickedIcsUri: Uri? = null
-	var pendingIcsAutoImport: Boolean = false
-	val notificationGrantedState = mutableStateOf(false)
+    var lastPickedIcsUri: Uri? = null
+    var pendingIcsAutoImport: Boolean = false
+    val notificationGrantedState = mutableStateOf(false)
 
-	override fun attachBaseContext(newBase: Context) {
-		val lang = runCatching {
-			runBlocking { SettingsStore(newBase).languageKey.first() }
-		}.getOrDefault("zh")
-		super.attachBaseContext(LocaleHelper.setLocale(newBase, lang))
-	}
+    override fun attachBaseContext(newBase: Context) {
+        val lang = runCatching {
+            runBlocking { SettingsStore(newBase).languageKey.first() }
+        }.getOrDefault("zh")
+        super.attachBaseContext(LocaleHelper.setLocale(newBase, lang))
+    }
 
-	override fun onCreate(savedInstanceState: Bundle?) {
-		setTheme(SplashThemeMirror.startingThemeRes(this))
-		installSplashScreen()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(SplashThemeMirror.startingThemeRes(this))
+        installSplashScreen()
 
-		super.onCreate(savedInstanceState)
-		enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
-		handleWidgetIntent(intent)
+        handleWidgetIntent(intent)
 
-		notificationHelper = NotificationHelper(applicationContext)
-		notificationHelper.createNotificationChannel()
+        notificationHelper = NotificationHelper(applicationContext)
+        notificationHelper.createNotificationChannel()
 
-		backupPickerLauncher =
-			registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-				if (result.resultCode == RESULT_OK) {
-					result.data?.data?.let { uri: Uri ->
-						mainViewModel.onAction(
-							MainAction.CreateBackup(uri, mainViewModel.backupData.value)
-						)
-					}
-				}
-			}
+        backupPickerLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == RESULT_OK) {
+                    result.data?.data?.let { uri: Uri ->
+                        mainViewModel.onAction(
+                            MainAction.CreateBackup(uri, mainViewModel.backupData.value)
+                        )
+                    }
+                }
+            }
 
-		restorePickerLauncher =
-			registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-				if (result.resultCode == RESULT_OK) {
-					result.data?.data?.let { uri: Uri ->
-						mainViewModel.onAction(MainAction.LoadBackup(uri))
-					}
-				}
-			}
+        // Legacy launchers are kept temporarily because the old onboarding/navigation
+        // signatures still reference them. Their user-facing entry points are disabled.
+        restorePickerLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == RESULT_OK) {
+                    result.data?.data?.let { uri: Uri ->
+                        mainViewModel.onAction(MainAction.LoadBackup(uri))
+                    }
+                }
+            }
 
-		calendarPermissionLauncher =
-			registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { grants ->
-				val granted = grants.values.all { it }
-				if (granted) {
-					mainViewModel.onAction(MainAction.RefreshWritableCalendars)
-					mainViewModel.onAction(MainAction.SetCalendarSyncEnabled(true))
-				}
-			}
+        calendarPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { grants ->
+                val granted = grants.values.all { it }
+                if (granted) {
+                    mainViewModel.onAction(MainAction.RefreshWritableCalendars)
+                    mainViewModel.onAction(MainAction.SetCalendarSyncEnabled(true))
+                }
+            }
 
-		notificationPermissionLauncher =
-			registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-				notificationGrantedState.value = granted
-			}
+        notificationPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+                notificationGrantedState.value = granted
+            }
 
-		notificationGrantedState.value =
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-				checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
-						PackageManager.PERMISSION_GRANTED
-			} else true
+        notificationGrantedState.value =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
+                    PackageManager.PERMISSION_GRANTED
+            } else true
 
-		icsPickerLauncher =
-			registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-				if (result.resultCode == RESULT_OK) {
-					result.data?.data?.let { uri: Uri ->
-						lastPickedIcsUri = uri
-						if (pendingIcsAutoImport) {
-							pendingIcsAutoImport = false
-							mainViewModel.onAction(MainAction.ImportIcsFile(uri))
-						} else {
-							mainViewModel.onAction(MainAction.ParseIcsFile(uri))
-						}
-					}
-				}
-			}
+        icsPickerLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == RESULT_OK) {
+                    result.data?.data?.let { uri: Uri ->
+                        lastPickedIcsUri = uri
+                        if (pendingIcsAutoImport) {
+                            pendingIcsAutoImport = false
+                            mainViewModel.onAction(MainAction.ImportIcsFile(uri))
+                        } else {
+                            mainViewModel.onAction(MainAction.ParseIcsFile(uri))
+                        }
+                    }
+                }
+            }
 
-		setContent {
-			val mainState by mainViewModel.state.collectAsStateWithLifecycle()
-			SnaptickTheme(
-				theme = mainState.theme,
-				dynamicColor = mainState.dynamicTheme
-			) {
-				AppNavigation(
-					mainViewModel = mainViewModel,
-					startDestination = widgetNavigateTo
-				)
-				CustomSnackBar()
-			}
-		}
-	}
+        setContent {
+            val mainState by mainViewModel.state.collectAsStateWithLifecycle()
+            val resolvedStartDestination = when {
+                widgetNavigateTo != null -> widgetNavigateTo
+                mainState.bootResolved && mainState.onboardingCompleted -> Routes.CalenderScreen.name
+                else -> null
+            }
 
-	override fun onNewIntent(intent: Intent) {
-		super.onNewIntent(intent)
-		handleWidgetIntent(intent)
-	}
+            SnaptickTheme(
+                theme = mainState.theme,
+                dynamicColor = mainState.dynamicTheme
+            ) {
+                AppNavigation(
+                    mainViewModel = mainViewModel,
+                    startDestination = resolvedStartDestination
+                )
+                CustomSnackBar()
+            }
+        }
+    }
 
-	private fun handleWidgetIntent(intent: Intent?) {
-		val raw = intent?.getStringExtra(EXTRA_NAVIGATE_TO)
-		widgetNavigateTo = when {
-			raw == null -> null
-			raw in WIDGET_ALLOWED_ROUTES -> raw
-			raw.startsWith(Routes.PomodoroScreen.name + "/") -> raw
-			else -> null
-		}
-	}
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleWidgetIntent(intent)
+    }
 
-	companion object {
-		private val WIDGET_ALLOWED_ROUTES: Set<String> = setOf(
-			Routes.AddTaskScreen.name,
-		)
-	}
+    private fun handleWidgetIntent(intent: Intent?) {
+        val raw = intent?.getStringExtra(EXTRA_NAVIGATE_TO)
+        widgetNavigateTo = when {
+            raw == null -> null
+            raw in WIDGET_ALLOWED_ROUTES -> raw
+            raw.startsWith(Routes.PomodoroScreen.name + "/") -> raw
+            else -> null
+        }
+    }
+
+    companion object {
+        private val WIDGET_ALLOWED_ROUTES: Set<String> = setOf(
+            Routes.AddTaskScreen.name,
+        )
+    }
 }

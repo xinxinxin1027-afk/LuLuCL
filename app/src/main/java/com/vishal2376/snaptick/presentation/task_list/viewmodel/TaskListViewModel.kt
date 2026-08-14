@@ -14,68 +14,64 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
-/**
- * Owns the today/all task lists and the toggle/delete/undo intents emitted
- * from the home, calendar, this-week, completed, and free-time screens.
- *
- * Reminder scheduling is handled inside [TaskRepository] now; this VM no
- * longer talks to the scheduler directly. For repeating tasks, completion
- * writes a (uuid, today) row to `task_completions` instead of mutating the
- * template's `isCompleted` flag, so the same template stays armed for
- * future occurrences.
- */
 @HiltViewModel
 class TaskListViewModel @Inject constructor(
-	private val repository: TaskRepository,
+    private val repository: TaskRepository,
 ) : ViewModel() {
 
-	val todayTasks: Flow<List<Task>> = repository.getTodayTasksWithCompletions()
-	val allTasks: Flow<List<Task>> = repository.getAllTasks()
+    val todayTasks: Flow<List<Task>> = repository.getTodayTasksWithCompletions()
+    val allTasks: Flow<List<Task>> = repository.getAllTasks()
 
-	private val _events = MutableSharedFlow<TaskListEvent>(extraBufferCapacity = 1)
-	val events = _events.asSharedFlow()
+    private val _events = MutableSharedFlow<TaskListEvent>(extraBufferCapacity = 1)
+    val events = _events.asSharedFlow()
 
-	private var deletedTask: Task? = null
+    private var deletedTask: Task? = null
 
-	fun onAction(action: TaskListAction) {
-		when (action) {
-			is TaskListAction.ToggleCompletion -> toggleCompletion(
-				action.taskId,
-				action.isCompleted
-			)
+    fun onAction(action: TaskListAction) {
+        when (action) {
+            is TaskListAction.ToggleCompletion -> toggleCompletion(
+                taskId = action.taskId,
+                date = LocalDate.now(),
+                isCompleted = action.isCompleted,
+            )
 
-			is TaskListAction.SwipeTask -> {
-				deletedTask = action.task
-				deleteTask(action.task)
-			}
+            is TaskListAction.ToggleCompletionForDate -> toggleCompletion(
+                taskId = action.taskId,
+                date = action.date,
+                isCompleted = action.isCompleted,
+            )
 
-			is TaskListAction.DeleteTask -> viewModelScope.launch {
-				repository.getTaskById(action.taskId)?.let {
-					deletedTask = it
-					repository.deleteTask(it)
-				}
-			}
+            is TaskListAction.SwipeTask -> {
+                deletedTask = action.task
+                deleteTask(action.task)
+            }
 
-			is TaskListAction.UndoDelete -> viewModelScope.launch {
-				deletedTask?.let { task -> repository.insertTask(task) }
-			}
-		}
-	}
+            is TaskListAction.DeleteTask -> viewModelScope.launch {
+                repository.getTaskById(action.taskId)?.let {
+                    deletedTask = it
+                    repository.deleteTask(it)
+                }
+            }
 
-	private fun deleteTask(task: Task) {
-		viewModelScope.launch { repository.deleteTask(task) }
-	}
+            is TaskListAction.UndoDelete -> viewModelScope.launch {
+                deletedTask?.let { task -> repository.insertTask(task) }
+            }
+        }
+    }
 
-	private fun toggleCompletion(taskId: Int, isCompleted: Boolean) {
-		viewModelScope.launch {
-			val task = repository.getTaskById(taskId) ?: return@launch
-			if (task.isRepeated) {
-				val today = LocalDate.now()
-				if (isCompleted) repository.markCompletedForDate(task.uuid, today)
-				else repository.unmarkCompletedForDate(task.uuid, today)
-			} else {
-				repository.updateTask(task.copy(isCompleted = isCompleted))
-			}
-		}
-	}
+    private fun deleteTask(task: Task) {
+        viewModelScope.launch { repository.deleteTask(task) }
+    }
+
+    private fun toggleCompletion(taskId: Int, date: LocalDate, isCompleted: Boolean) {
+        viewModelScope.launch {
+            val task = repository.getTaskById(taskId) ?: return@launch
+            if (task.isRepeated) {
+                if (isCompleted) repository.markCompletedForDate(task.uuid, date)
+                else repository.unmarkCompletedForDate(task.uuid, date)
+            } else {
+                repository.updateTask(task.copy(isCompleted = isCompleted))
+            }
+        }
+    }
 }
