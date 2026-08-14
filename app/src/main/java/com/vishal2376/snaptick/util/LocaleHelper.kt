@@ -6,7 +6,7 @@ import java.util.Locale
 
 object LocaleHelper {
 
-	fun setLocale(context: Context, language: String = "en"): Context {
+	fun setLocale(context: Context, language: String = "zh"): Context {
 		val locale = Locale(language)
 		Locale.setDefault(locale)
 
@@ -15,7 +15,5 @@ object LocaleHelper {
 		configuration.setLocale(locale)
 
 		return context.createConfigurationContext(configuration)
-
-
 	}
 }
