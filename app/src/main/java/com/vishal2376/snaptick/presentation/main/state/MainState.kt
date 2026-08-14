@@ -13,7 +13,7 @@ import java.time.LocalTime
 import java.util.Locale
 
 data class MainState(
-	val buildVersion: String = "0.0",
+	val buildVersion: String = "0.0.1",
 	val buildVersionCode: Int = 1,
 	val firstTimeOpened: Boolean = true,
 	val showWhatsNew: Boolean = false,
@@ -23,7 +23,7 @@ data class MainState(
 	val durationList: List<Long> = listOf(30, 60, 90, 0),
 	val streak: Int = 0,
 	val sleepTime: LocalTime = LocalTime.of(23, 59),
-	val language: String = Locale.ENGLISH.language,
+	val language: String = Locale.CHINESE.language,
 	val isWheelTimePicker: Boolean = true,
 	val is24hourTimeFormat: Boolean = false,
 	val calenderView: CalenderView = CalenderView.MONTHLY,
@@ -40,11 +40,6 @@ data class MainState(
 	val updateCheckInFlight: Boolean = false,
 	val updateCheckFailed: Boolean = false,
 	val lastUpdateCheckAt: Long = 0L,
-	/**
-	 * Set when the user picks a backup .json. UI renders a confirmation dialog
-	 * with the parsed task count. Cleared by ConfirmRestore (after wipe+insert)
-	 * or CancelRestore.
-	 */
 	val pendingRestore: PendingRestore? = null,
 )
 
