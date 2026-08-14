@@ -26,6 +26,7 @@ class TaskListViewModel @Inject constructor(
     val events = _events.asSharedFlow()
 
     private var deletedTask: Task? = null
+    private var deletedOffsets: List<Int> = emptyList()
 
     fun onAction(action: TaskListAction) {
         when (action) {
@@ -41,26 +42,46 @@ class TaskListViewModel @Inject constructor(
                 isCompleted = action.isCompleted,
             )
 
+            is TaskListAction.UpsertTask -> viewModelScope.launch {
+                if (action.task.id > 0) {
+                    repository.updateTask(action.task, action.reminderOffsets)
+                } else {
+                    repository.insertTask(action.task, action.reminderOffsets)
+                }
+            }
+
+            is TaskListAction.TogglePin -> viewModelScope.launch {
+                repository.getTaskById(action.taskId)?.let { task ->
+                    repository.updateTask(task.copy(isPinned = !task.isPinned))
+                }
+            }
+
             is TaskListAction.SwipeTask -> {
                 deletedTask = action.task
                 deleteTask(action.task)
             }
 
             is TaskListAction.DeleteTask -> viewModelScope.launch {
-                repository.getTaskById(action.taskId)?.let {
-                    deletedTask = it
-                    repository.deleteTask(it)
+                repository.getTaskById(action.taskId)?.let { task ->
+                    deletedTask = task
+                    deletedOffsets = repository.getReminderOffsets(task.uuid)
+                    repository.deleteTask(task)
                 }
             }
 
             is TaskListAction.UndoDelete -> viewModelScope.launch {
-                deletedTask?.let { task -> repository.insertTask(task) }
+                deletedTask?.let { task ->
+                    repository.insertTask(task, deletedOffsets.ifEmpty { task.reminderOffsets() })
+                }
             }
         }
     }
 
     private fun deleteTask(task: Task) {
-        viewModelScope.launch { repository.deleteTask(task) }
+        viewModelScope.launch {
+            deletedOffsets = repository.getReminderOffsets(task.uuid)
+            repository.deleteTask(task)
+        }
     }
 
     private fun toggleCompletion(taskId: Int, date: LocalDate, isCompleted: Boolean) {

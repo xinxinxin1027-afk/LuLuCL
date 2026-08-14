@@ -11,34 +11,33 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TaskDao {
-	@Insert(onConflict = OnConflictStrategy.REPLACE)
-	suspend fun insertTask(task: Task)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTask(task: Task)
 
-	@Delete
-	suspend fun deleteTask(task: Task)
+    @Delete
+    suspend fun deleteTask(task: Task)
 
-	@Update(onConflict = OnConflictStrategy.REPLACE)
-	suspend fun updateTask(task: Task)
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun updateTask(task: Task)
 
-	@Query("SELECT * FROM task_table WHERE id=:id")
-	suspend fun getTaskById(id: Int): Task?
+    @Query("SELECT * FROM task_table WHERE id=:id")
+    suspend fun getTaskById(id: Int): Task?
 
-	@Query("SELECT * FROM task_table WHERE uuid=:uuid LIMIT 1")
-	suspend fun getTaskByUuid(uuid: String): Task?
+    @Query("SELECT * FROM task_table WHERE uuid=:uuid LIMIT 1")
+    suspend fun getTaskByUuid(uuid: String): Task?
 
-	@Query("SELECT * FROM task_table")
-	fun getAllTasks(): Flow<List<Task>>
+    @Query("SELECT * FROM task_table")
+    fun getAllTasks(): Flow<List<Task>>
 
-	@Query("SELECT * FROM task_table")
-	suspend fun getAllTasksSnapshot(): List<Task>
+    @Query("SELECT * FROM task_table")
+    suspend fun getAllTasksSnapshot(): List<Task>
 
-	@Query("SELECT * FROM task_table WHERE date = :selectedDate")
-	fun getTasksByDate(selectedDate: String): Flow<List<Task>>
+    @Query("SELECT * FROM task_table WHERE isRepeated = 0 AND date <= :selectedDate AND endDate >= :selectedDate")
+    fun getTasksByDate(selectedDate: String): Flow<List<Task>>
 
-	@Query("SELECT * FROM task_table WHERE isRepeated = 1 AND date <= :upToDate")
-	fun getActiveRepeats(upToDate: String): Flow<List<Task>>
+    @Query("SELECT * FROM task_table WHERE isRepeated = 1 AND date <= :upToDate")
+    fun getActiveRepeats(upToDate: String): Flow<List<Task>>
 
-	@Query("DELETE FROM task_table")
-	suspend fun deleteAllTasks()
-
+    @Query("DELETE FROM task_table")
+    suspend fun deleteAllTasks()
 }

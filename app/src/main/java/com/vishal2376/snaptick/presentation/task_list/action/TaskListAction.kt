@@ -6,16 +6,19 @@ import java.time.LocalDate
 sealed interface TaskListAction {
     data class ToggleCompletion(val taskId: Int, val isCompleted: Boolean) : TaskListAction
 
-    /**
-     * Calendar-specific completion action. Repeating tasks must be completed for
-     * the day selected in the calendar rather than always mutating today's row.
-     */
     data class ToggleCompletionForDate(
         val taskId: Int,
         val date: LocalDate,
         val isCompleted: Boolean,
     ) : TaskListAction
 
+    /** Insert a new calendar task or replace an existing one, including reminders. */
+    data class UpsertTask(
+        val task: Task,
+        val reminderOffsets: List<Int> = task.reminderOffsets(),
+    ) : TaskListAction
+
+    data class TogglePin(val taskId: Int) : TaskListAction
     data class SwipeTask(val task: Task) : TaskListAction
     data class DeleteTask(val taskId: Int) : TaskListAction
     data object UndoDelete : TaskListAction

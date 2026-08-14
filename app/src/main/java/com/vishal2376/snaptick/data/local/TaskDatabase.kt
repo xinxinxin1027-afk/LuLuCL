@@ -7,34 +7,36 @@ import androidx.room.RoomDatabase
 import com.vishal2376.snaptick.domain.model.Task
 
 @Database(
-	entities = [Task::class, TaskCompletion::class, TaskReminder::class],
-	version = 5,
+    entities = [Task::class, TaskCompletion::class, TaskReminder::class],
+    version = 6,
 )
 abstract class TaskDatabase : RoomDatabase() {
-	abstract fun taskDao(): TaskDao
-	abstract fun taskCompletionDao(): TaskCompletionDao
-	abstract fun taskReminderDao(): TaskReminderDao
+    abstract fun taskDao(): TaskDao
+    abstract fun taskCompletionDao(): TaskCompletionDao
+    abstract fun taskReminderDao(): TaskReminderDao
 
-	companion object {
-		@Volatile
-		private var INSTANCE: TaskDatabase? = null
+    companion object {
+        @Volatile
+        private var INSTANCE: TaskDatabase? = null
 
-		/**
-		 * Get singleton instance of TaskDatabase.
-		 * Used by widget actions that need database access outside of DI context.
-		 */
-		fun getInstance(context: Context): TaskDatabase {
-			return INSTANCE ?: synchronized(this) {
-				val instance = Room.databaseBuilder(
-					context.applicationContext,
-					TaskDatabase::class.java,
-					"local_db"
-				)
-					.addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
-					.build()
-				INSTANCE = instance
-				instance
-			}
-		}
-	}
+        fun getInstance(context: Context): TaskDatabase {
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    TaskDatabase::class.java,
+                    "local_db",
+                )
+                    .addMigrations(
+                        MIGRATION_1_2,
+                        MIGRATION_2_3,
+                        MIGRATION_3_4,
+                        MIGRATION_4_5,
+                        MIGRATION_5_6,
+                    )
+                    .build()
+                INSTANCE = instance
+                instance
+            }
+        }
+    }
 }
