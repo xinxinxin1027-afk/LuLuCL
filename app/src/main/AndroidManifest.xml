@@ -9,8 +9,6 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.READ_CALENDAR" />
-    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
@@ -34,30 +32,14 @@
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!--
-            Per-task reminder fire receiver. Triggered only by the AlarmManager
-            PendingIntents we create ourselves, so exported is false. A third-
-            party app cannot deliver intents to this receiver.
-        -->
         <receiver
             android:name=".receiver.ReminderReceiver"
             android:exported="false" />
 
-        <!--
-            System event receiver: re-arms reminders on boot, package replace,
-            time / timezone change. Must be exported because Android delivers
-            these intents from the system server. Cannot be spoofed by a
-            third-party app: every action below is a "protected broadcast"
-            (declared in framework/base/core/res/AndroidManifest.xml), which
-            means only the system itself is allowed to dispatch them. Setting
-            exported="false" here would silently break boot recovery on every
-            device.
-        -->
         <receiver
             android:name=".receiver.SystemEventReceiver"
             android:exported="true">
@@ -70,30 +52,6 @@
             </intent-filter>
         </receiver>
 
-        <!--
-            AppWidget host receiver. Required by the AppWidget framework to be
-            exported so the system's AppWidget service can call APPWIDGET_UPDATE
-            on it. APPWIDGET_UPDATE is a protected broadcast, so a third-party
-            app cannot trigger it. Setting exported="false" here would break
-            the widget altogether.
-        -->
-        <receiver
-            android:name=".widget.receiver.WidgetReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/snaptick_widget_info" />
-        </receiver>
-
-        <!--
-            Pomodoro foreground service. Keeps the timer ticking when the app
-            is in the background or process is swiped away. Type dataSync is
-            chosen over shortService to avoid the 3-minute cap; user-initiated
-            timers are an acceptable use of dataSync per Play policy.
-        -->
         <service
             android:name=".service.PomodoroService"
             android:exported="false"
