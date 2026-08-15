@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.ViewAgenda
@@ -16,10 +15,6 @@ import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
@@ -34,8 +29,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.WeekCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
@@ -46,7 +43,6 @@ import com.vishal2376.snaptick.presentation.calender_screen.component.DaysOfWeek
 import com.vishal2376.snaptick.presentation.calender_screen.component.MonthDayComponent
 import com.vishal2376.snaptick.presentation.calender_screen.component.WeekDayComponent
 import com.vishal2376.snaptick.presentation.common.CalenderView
-import com.vishal2376.snaptick.presentation.common.h1TextStyle
 import com.vishal2376.snaptick.presentation.main.action.MainAction
 import com.vishal2376.snaptick.presentation.main.state.MainState
 import com.vishal2376.snaptick.presentation.task_list.action.TaskListAction
@@ -69,6 +65,29 @@ fun CalenderScreen(
     onNavigate: (route: String) -> Unit,
     onBack: () -> Unit,
 ) {
+    LuluCalendarDesignTheme {
+        CalenderScreenContent(
+            tasks = tasks,
+            appState = appState,
+            onTaskAction = onTaskAction,
+            onAction = onAction,
+            onNavigate = onNavigate,
+            onBack = onBack,
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@Composable
+private fun CalenderScreenContent(
+    tasks: List<Task>,
+    appState: MainState,
+    onTaskAction: (TaskListAction) -> Unit,
+    onAction: (MainAction) -> Unit,
+    onNavigate: (route: String) -> Unit,
+    onBack: () -> Unit,
+) {
+    val colors = LuluCalendarTheme.colors
     val scope = rememberCoroutineScope()
     var calenderView by remember(appState.calenderView) { mutableStateOf(appState.calenderView) }
     var agendaOnlyMode by remember { mutableStateOf(false) }
@@ -119,7 +138,11 @@ fun CalenderScreen(
     }
 
     fun openCreate() {
-        editorState = CalendarEditorState(startDate = selectedDay)
+        editorState = CalendarEditorState(
+            startDate = selectedDay,
+            colorHex = SudaColors.first(),
+            quadrant = 4,
+        )
     }
 
     fun openEdit(task: Task) {
@@ -135,7 +158,7 @@ fun CalenderScreen(
             allDay = task.isAllDayTaskEnabled(),
             endDate = task.safeEndDate().takeIf { it != task.date || !task.isAllDayTaskEnabled() },
             endTime = task.endTime.takeUnless { task.isAllDayTaskEnabled() },
-            colorHex = task.colorHex.ifBlank { Quadrants.getOrNull(task.quadrant - 1)?.color ?: "#10B981" },
+            colorHex = task.colorHex.ifBlank { Quadrants.getOrNull(task.quadrant - 1)?.color ?: SudaColors.first() },
             quadrant = task.quadrant.coerceIn(1, 4),
             isPinned = task.isPinned,
             reminders = offsets.map { anchor.minusMinutes(it.toLong()) },
@@ -152,8 +175,8 @@ fun CalenderScreen(
     taskPendingDelete?.let { task ->
         AlertDialog(
             onDismissRequest = { taskPendingDelete = null },
-            title = { Text("删除安排") },
-            text = { Text("确定删除「${task.title}」吗？") },
+            title = { Text("删除这项日程？", fontWeight = FontWeight.Bold) },
+            text = { Text("“${task.title}”将从日历中移除，此操作无法撤销。", color = colors.secondaryInk) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -161,12 +184,16 @@ fun CalenderScreen(
                         taskPendingDelete = null
                     },
                 ) {
-                    Text("删除", color = MaterialTheme.colorScheme.error)
+                    Text("删除", color = colors.danger, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { taskPendingDelete = null }) { Text("取消") }
+                TextButton(onClick = { taskPendingDelete = null }) {
+                    Text("取消", color = colors.secondaryInk)
+                }
             },
+            containerColor = colors.surface,
+            titleContentColor = colors.ink,
         )
     }
 
@@ -181,7 +208,7 @@ fun CalenderScreen(
                     TaskListAction.UpsertTask(
                         task = task,
                         reminderOffsets = edited.reminderOffsets(),
-                    )
+                    ),
                 )
                 selectedDay = edited.startDate
                 editorState = null
@@ -192,21 +219,37 @@ fun CalenderScreen(
     val calendarTopBar: @Composable () -> Unit = {
         TopAppBar(
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background,
+                containerColor = colors.canvas,
+                titleContentColor = colors.ink,
+                navigationIconContentColor = colors.secondaryInk,
+                actionIconContentColor = colors.secondaryInk,
             ),
             title = {
-                Text(
-                    text = currentMonthTitle.getDisplayName(TextStyle.FULL, Locale.getDefault()),
-                    style = h1TextStyle,
-                )
-            },
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(imageVector = Icons.Rounded.ArrowBack, contentDescription = null)
+                androidx.compose.foundation.layout.Column {
+                    Text(
+                        text = "日历",
+                        color = colors.tertiaryInk,
+                        fontSize = 10.sp,
+                    )
+                    Text(
+                        text = currentMonthTitle.getDisplayName(TextStyle.FULL, Locale.CHINA),
+                        color = colors.ink,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
                 }
             },
+            navigationIcon = {
+                LuluIconButton(
+                    icon = Icons.Rounded.ArrowBack,
+                    contentDescription = "返回",
+                    onClick = onBack,
+                )
+            },
             actions = {
-                IconButton(
+                LuluIconButton(
+                    icon = Icons.Default.Restore,
+                    contentDescription = "回到今天",
                     onClick = {
                         scope.launch {
                             selectedDay = currentDate
@@ -217,12 +260,13 @@ fun CalenderScreen(
                             }
                         }
                     },
-                ) {
-                    Icon(imageVector = Icons.Default.Restore, contentDescription = "回到今天")
-                }
+                    filled = true,
+                )
 
                 if (!agendaOnlyMode) {
-                    IconButton(
+                    LuluIconButton(
+                        icon = if (calenderView == CalenderView.WEEKLY) Icons.Default.CalendarMonth else Icons.Default.ViewWeek,
+                        contentDescription = "切换月/周视图",
                         onClick = {
                             calenderView = if (calenderView == CalenderView.WEEKLY) {
                                 CalenderView.MONTHLY
@@ -231,30 +275,25 @@ fun CalenderScreen(
                             }
                             onAction(MainAction.UpdateCalenderView(calenderView))
                         },
-                    ) {
-                        Icon(
-                            imageVector = if (calenderView == CalenderView.WEEKLY) {
-                                Icons.Default.CalendarMonth
-                            } else {
-                                Icons.Default.ViewWeek
-                            },
-                            contentDescription = "切换月/周视图",
-                        )
-                    }
-                }
-
-                IconButton(onClick = { agendaOnlyMode = !agendaOnlyMode }) {
-                    Icon(
-                        imageVector = if (agendaOnlyMode) Icons.Default.CalendarMonth else Icons.Default.ViewAgenda,
-                        contentDescription = if (agendaOnlyMode) "返回日历" else "进入纯日程",
+                        filled = true,
                     )
                 }
+
+                LuluIconButton(
+                    icon = if (agendaOnlyMode) Icons.Default.CalendarMonth else Icons.Default.ViewAgenda,
+                    contentDescription = if (agendaOnlyMode) "返回日历" else "进入纯日程",
+                    onClick = { agendaOnlyMode = !agendaOnlyMode },
+                    brand = true,
+                )
             },
         )
     }
 
     if (agendaOnlyMode) {
-        Scaffold(topBar = calendarTopBar) { innerPadding ->
+        Scaffold(
+            topBar = calendarTopBar,
+            containerColor = colors.canvas,
+        ) { innerPadding ->
             AgendaPanel(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -269,7 +308,7 @@ fun CalenderScreen(
                             taskId = task.id,
                             date = selectedDay,
                             isCompleted = !task.isCompleted,
-                        )
+                        ),
                     )
                 },
                 onTogglePin = { task -> onTaskAction(TaskListAction.TogglePin(task.id)) },
@@ -289,11 +328,11 @@ fun CalenderScreen(
 
     BottomSheetScaffold(
         scaffoldState = bottomSheetScaffoldState,
-        sheetPeekHeight = 176.dp,
-        sheetContainerColor = MaterialTheme.colorScheme.background,
+        sheetPeekHeight = 164.dp,
+        sheetContainerColor = colors.canvas,
         sheetContent = {
             AgendaPanel(
-                modifier = Modifier.fillMaxHeight(0.78f),
+                modifier = Modifier.fillMaxHeight(0.80f),
                 selectedDay = selectedDay,
                 tasks = selectedDayTasks,
                 onCreate = ::openCreate,
@@ -304,7 +343,7 @@ fun CalenderScreen(
                             taskId = task.id,
                             date = selectedDay,
                             isCompleted = !task.isCompleted,
-                        )
+                        ),
                     )
                 },
                 onTogglePin = { task -> onTaskAction(TaskListAction.TogglePin(task.id)) },
@@ -327,23 +366,11 @@ fun CalenderScreen(
             )
         },
         topBar = calendarTopBar,
-        floatingActionButton = {
-            if (selectedDay >= LocalDate.now()) {
-                FloatingActionButton(
-                    onClick = ::openCreate,
-                    modifier = Modifier.padding(end = 4.dp, bottom = 4.dp),
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.primaryContainer,
-                ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "新建")
-                }
-            }
-        },
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             AnimatedVisibility(visible = calenderView == CalenderView.WEEKLY) {
                 WeekCalendar(
-                    modifier = Modifier.padding(horizontal = 10.dp),
+                    modifier = Modifier.padding(horizontal = 12.dp),
                     state = weekState,
                     dayContent = { day ->
                         WeekDayComponent(
@@ -360,7 +387,7 @@ fun CalenderScreen(
 
             AnimatedVisibility(visible = calenderView == CalenderView.MONTHLY) {
                 HorizontalCalendar(
-                    modifier = Modifier.padding(horizontal = 10.dp),
+                    modifier = Modifier.padding(horizontal = 12.dp),
                     state = monthState,
                     dayContent = { day ->
                         MonthDayComponent(
@@ -382,6 +409,7 @@ fun CalenderScreen(
     }
 }
 
+@Preview
 @Composable
 fun CalenderScreenPreview() {
     SnaptickTheme {
