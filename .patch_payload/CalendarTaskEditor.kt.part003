@@ -1,0 +1,285 @@
+                    if (state.reminders.isEmpty()) "未设置" else "${state.reminders.size} 个提醒",
+                    color = LuluCalendarTheme.colors.tertiaryInk,
+                    fontSize = 10.sp,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+            }
+        }
+        LazyRow(
+            contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 13.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(presets, key = { it.first }) { (label, minutes) ->
+                val reminder = start.minusMinutes(minutes)
+                LuluChip(
+                    text = label,
+                    selected = reminder in state.reminders,
+                    onClick = {
+                        val next = if (reminder in state.reminders) state.reminders - reminder else state.reminders + reminder
+                        onStateChange(state.copy(reminders = next.distinct().sorted()))
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuadrantEditor(
+    selected: Int,
+    onSelected: (Int) -> Unit,
+) {
+    Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 13.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            EditorIcon(Icons.Default.Flag)
+            Column(modifier = Modifier.padding(start = 10.dp)) {
+                Text("四象限", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                Text("重要程度与紧急程度", color = LuluCalendarTheme.colors.tertiaryInk, fontSize = 10.sp)
+            }
+        }
+        Column(
+            modifier = Modifier.padding(top = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            listOf(listOf(1, 2), listOf(3, 4)).forEach { rowItems ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    rowItems.forEach { quadrant ->
+                        QuadrantOption(
+                            quadrant = quadrant,
+                            selected = selected == quadrant,
+                            onClick = { onSelected(quadrant) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuadrantOption(
+    quadrant: Int,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val accent = quadrantColor(quadrant)
+    val description = when (quadrant) {
+        1 -> "高价值且时间紧迫"
+        2 -> "重要但可提前安排"
+        3 -> "时间紧但价值较低"
+        else -> "低压力与日常事项"
+    }
+    Surface(
+        modifier = modifier.height(68.dp),
+        shape = RoundedCornerShape(15.dp),
+        color = if (selected) accent.copy(alpha = .10f) else LuluCalendarTheme.colors.surface,
+        border = BorderStroke(1.dp, if (selected) accent else LuluCalendarTheme.colors.outline),
+        onClick = onClick,
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 11.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(9.dp)
+                        .background(accent, CircleShape),
+                )
+                Text(
+                    text = quadrantLabel(quadrant),
+                    color = LuluCalendarTheme.colors.ink,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 7.dp),
+                )
+            }
+            Text(
+                text = description,
+                color = LuluCalendarTheme.colors.tertiaryInk,
+                fontSize = 9.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ColorEditor(
+    selected: String,
+    onSelected: (String) -> Unit,
+) {
+    Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 13.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            EditorIcon(Icons.Default.Palette)
+            Column(modifier = Modifier.padding(start = 10.dp)) {
+                Text("颜色", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                Text("用于日历圆点与任务卡片", color = LuluCalendarTheme.colors.tertiaryInk, fontSize = 10.sp)
+            }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            LuluTaskColors.forEach { hex ->
+                Surface(
+                    modifier = Modifier.size(44.dp),
+                    shape = CircleShape,
+                    color = Color.Transparent,
+                    onClick = { onSelected(hex) },
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Surface(
+                            modifier = Modifier.size(32.dp),
+                            shape = CircleShape,
+                            color = parseCalendarColor(hex),
+                            border = if (normalizeHexColor(selected) == hex) {
+                                BorderStroke(3.dp, LuluCalendarTheme.colors.surface)
+                            } else null,
+                        ) {
+                            if (normalizeHexColor(selected) == hex) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = "已选颜色",
+                                    tint = Color.White,
+                                    modifier = Modifier.padding(8.dp),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SubtaskEditor(
+    subtasks: List<TaskSubtask>,
+    onChange: (List<TaskSubtask>) -> Unit,
+) {
+    EditorCard {
+        subtasks.forEachIndexed { index, subtask ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+                    .padding(start = 14.dp, end = 7.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                EditorIcon(Icons.Default.SubdirectoryArrowRight)
+                BasicTextField(
+                    value = subtask.title,
+                    onValueChange = { value ->
+                        onChange(subtasks.map { if (it.id == subtask.id) it.copy(title = value) else it })
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 10.dp),
+                    singleLine = true,
+                    textStyle = TextStyle(
+                        color = LuluCalendarTheme.colors.ink,
+                        fontSize = 13.sp,
+                    ),
+                    cursorBrush = SolidColor(LuluCalendarTheme.colors.brand),
+                )
+                LuluIconButton(
+                    icon = Icons.Default.Delete,
+                    contentDescription = "删除子任务",
+                    onClick = { onChange(subtasks.filterNot { it.id == subtask.id }) },
+                )
+            }
+            if (index != subtasks.lastIndex) EditorDivider()
+        }
+        if (subtasks.isNotEmpty()) EditorDivider()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp)
+                .clickable { onChange(subtasks + TaskSubtask(title = "")) }
+                .padding(horizontal = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = null,
+                tint = LuluCalendarTheme.colors.brandStrong,
+                modifier = Modifier.size(18.dp),
+            )
+            Text(
+                text = "添加子任务",
+                color = LuluCalendarTheme.colors.brandStrong,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = 9.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun EditorErrorBanner(errors: List<CalendarEditorError>) {
+    val colors = LuluCalendarTheme.colors
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(15.dp),
+        color = colors.dangerSoft,
+        contentColor = colors.danger,
+        border = BorderStroke(1.dp, colors.danger.copy(alpha = .22f)),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Default.ErrorOutline, contentDescription = null, modifier = Modifier.size(20.dp))
+            Text(
+                text = errors.joinToString(separator = "；") { it.message },
+                fontSize = 12.sp,
+                lineHeight = 17.sp,
+                modifier = Modifier.padding(start = 9.dp),
+            )
+        }
+    }
+}
+
+private fun repeatSummary(days: Set<DayOfWeek>): String = when {
+    days.size == 7 -> "每天"
+    days == setOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY) -> "工作日"
+    else -> days.sortedBy { it.value }.joinToString("、") { it.getDisplayName(JavaTextStyle.NARROW, Locale.CHINA) }
+}
+
+private fun showDatePicker(
+    context: android.content.Context,
+    current: LocalDate,
+    onSelected: (LocalDate) -> Unit,
+) {
+    DatePickerDialog(
+        context,
+        { _, year, month, day -> onSelected(LocalDate.of(year, month + 1, day)) },
+        current.year,
+        current.monthValue - 1,
+        current.dayOfMonth,
+    ).show()
+}
+
+private fun showTimePicker(
+    context: android.content.Context,
+    current: LocalTime,
+    onSelected: (LocalTime) -> Unit,
+) {
+    TimePickerDialog(
+        context,
+        { _, hour, minute -> onSelected(LocalTime.of(hour, minute)) },
+        current.hour,
+        current.minute,
+        true,
+    ).show()
+}

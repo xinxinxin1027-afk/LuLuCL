@@ -1,0 +1,234 @@
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            tasks.take(3).forEachIndexed { index, task ->
+                Box(
+                    modifier = Modifier
+                        .size(3.dp)
+                        .background(
+                            if (selected) Color.White.copy(alpha = .9f)
+                            else if (index == 0) parseCalendarColor(task.colorHex)
+                            else parseCalendarColor(task.colorHex).copy(alpha = .75f),
+                            CircleShape,
+                        ),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun WeekCalendarContent(
+    selectedDate: LocalDate,
+    tasks: List<CalendarTaskItem>,
+    onDateSelected: (LocalDate) -> Unit,
+    onOpen: (CalendarTaskItem) -> Unit,
+    onCreate: () -> Unit,
+) {
+    val startOfWeek = selectedDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+    val week = remember(startOfWeek) { (0L until 7L).map { startOfWeek.plusDays(it) } }
+    val selectedTasks = remember(tasks, selectedDate) { tasks.forCalendarDate(selectedDate) }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = LuluCalendarDimens.screenHorizontal),
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(84.dp),
+            shape = RoundedCornerShape(22.dp),
+            color = LuluCalendarTheme.colors.surface,
+            border = BorderStroke(1.dp, LuluCalendarTheme.colors.outline),
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                week.forEach { date ->
+                    WeekDayCell(
+                        date = date,
+                        selected = date == selectedDate,
+                        onClick = { onDateSelected(date) },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+        }
+        if (selectedTasks.isEmpty()) {
+            CalendarEmptyState(
+                filtered = false,
+                onCreate = onCreate,
+                modifier = Modifier.fillMaxSize(),
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 14.dp),
+                contentPadding = PaddingValues(bottom = 24.dp),
+            ) {
+                items(selectedTasks, key = { it.uuid }) { task ->
+                    WeekTimelineRow(task = task, onClick = { onOpen(task) })
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WeekDayCell(
+    date: LocalDate,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = LuluCalendarTheme.colors
+    Surface(
+        modifier = modifier.fillMaxHeight(),
+        shape = RoundedCornerShape(15.dp),
+        color = if (selected) colors.brandSoft else Color.Transparent,
+        onClick = onClick,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(
+                text = date.dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.CHINA),
+                color = if (selected) colors.brandStrong else colors.tertiaryInk,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+            )
+            Surface(
+                modifier = Modifier
+                    .padding(top = 5.dp)
+                    .size(32.dp),
+                shape = CircleShape,
+                color = if (selected) colors.brand else Color.Transparent,
+                contentColor = if (selected) Color.White else colors.ink,
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(date.dayOfMonth.toString(), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WeekTimelineRow(
+    task: CalendarTaskItem,
+    onClick: () -> Unit,
+) {
+    val colors = LuluCalendarTheme.colors
+    val accent = parseCalendarColor(task.colorHex)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(82.dp),
+    ) {
+        Text(
+            text = if (task.allDay) "全天" else task.start.toLocalTime().format(TimelineFormatter),
+            color = colors.tertiaryInk,
+            fontSize = 11.sp,
+            modifier = Modifier
+                .width(48.dp)
+                .padding(top = 14.dp),
+            maxLines = 1,
+        )
+        Box(
+            modifier = Modifier
+                .width(14.dp)
+                .fillMaxHeight(),
+        ) {
+            Divider(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .width(1.dp)
+                    .fillMaxHeight(),
+                color = colors.divider,
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 18.dp)
+                    .size(9.dp)
+                    .background(accent, CircleShape),
+            )
+        }
+        Surface(
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 8.dp, bottom = 9.dp),
+            shape = RoundedCornerShape(16.dp),
+            color = colors.surface,
+            border = BorderStroke(1.dp, colors.outline),
+            onClick = onClick,
+        ) {
+            Row {
+                Box(
+                    modifier = Modifier
+                        .width(4.dp)
+                        .fillMaxHeight()
+                        .background(accent),
+                )
+                Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+                    Text(
+                        task.title,
+                        color = colors.ink,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    if (task.description.isNotBlank()) {
+                        Text(
+                            task.description,
+                            color = colors.secondaryInk,
+                            fontSize = 11.sp,
+                            lineHeight = 15.sp,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(top = 4.dp),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun newEditorState(date: LocalDate): CalendarEditorState = CalendarEditorState(
+    startDate = date,
+    endDate = date,
+    startTime = LocalTime.of(9, 0),
+    endTime = LocalTime.of(10, 0),
+)
+
+@Composable
+fun CalenderScreenPreviewData(): List<CalendarTaskItem> {
+    val today = LocalDate.now()
+    return remember(today) {
+        listOf(
+            CalendarTaskItem(
+                id = 1,
+                title = "完成 LuluCalendar 视觉复检",
+                description = "逐页核对色彩、间距、圆角与交互状态，整理最终自检报告。",
+                start = LocalDateTime.of(today, LocalTime.of(9, 30)),
+                end = LocalDateTime.of(today, LocalTime.of(11, 0)),
+                isPinned = true,
+                quadrant = 1,
+                colorHex = "#CF3E70",
+            ),
+            CalendarTaskItem(
+                id = 2,
+                title = "产品例会",
+                description = "同步本周日历体验与编辑器交互。",
+                start = LocalDateTime.of(today, LocalTime.of(14, 0)),
+                end = LocalDateTime.of(today, LocalTime.of(15, 0)),
+                quadrant = 3,
+                colorHex = "#6287C5",
+            ),
+        )
+    }
+}

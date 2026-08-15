@@ -1,0 +1,236 @@
+                        deleteTask = task
+                        detailTask = null
+                    },
+                    onTogglePin = { onTaskAction(CalendarTaskAction.TogglePin(task.id)) },
+                    onToggleSubtask = { subtaskId, completed ->
+                        onTaskAction(
+                            CalendarTaskAction.ToggleSubtask(
+                                taskId = task.id,
+                                subtaskId = subtaskId,
+                                completed = completed,
+                            ),
+                        )
+                    },
+                )
+            }
+
+            deleteTask?.let { task ->
+                DeleteCalendarTaskDialog(
+                    task = task,
+                    onDismiss = { deleteTask = null },
+                    onConfirm = {
+                        onTaskAction(CalendarTaskAction.Delete(task.id))
+                        deleteTask = null
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CalendarTopBar(
+    visibleMonth: YearMonth,
+    onBack: () -> Unit,
+    onToday: () -> Unit,
+    onSearch: () -> Unit,
+) {
+    val colors = LuluCalendarTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(LuluCalendarDimens.topBarHeight)
+            .padding(start = 8.dp, end = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        LuluIconButton(Icons.Default.ArrowBack, "返回", onBack)
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 1.dp),
+        ) {
+            Text("日历", color = colors.tertiaryInk, fontSize = 11.sp)
+            Text(
+                text = visibleMonth.format(MonthTitleFormatter),
+                color = colors.ink,
+                fontSize = 21.sp,
+                lineHeight = 25.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        Surface(
+            modifier = Modifier
+                .height(44.dp)
+                .padding(horizontal = 3.dp),
+            shape = RoundedCornerShape(14.dp),
+            color = colors.brandFaint,
+            contentColor = colors.brandStrong,
+            border = BorderStroke(1.dp, colors.brand.copy(alpha = .28f)),
+            onClick = onToday,
+        ) {
+            Box(
+                modifier = Modifier.padding(horizontal = 12.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("今天", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+        LuluIconButton(Icons.Default.Search, "搜索日程", onSearch)
+    }
+}
+
+@Composable
+private fun MonthCalendarContent(
+    visibleMonth: YearMonth,
+    selectedDate: LocalDate,
+    today: LocalDate,
+    tasks: List<CalendarTaskItem>,
+    filter: CalendarAgendaFilter,
+    onMonthChange: (YearMonth) -> Unit,
+    onDateSelected: (LocalDate) -> Unit,
+    onFilterChange: (CalendarAgendaFilter) -> Unit,
+    onFilterClick: () -> Unit,
+    onCreate: () -> Unit,
+    onOpen: (CalendarTaskItem) -> Unit,
+    onToggleCompletion: (CalendarTaskItem, Boolean) -> Unit,
+    onTogglePin: (CalendarTaskItem) -> Unit,
+) {
+    var dragX by remember(visibleMonth) { mutableFloatStateOf(0f) }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = LuluCalendarDimens.screenHorizontal),
+    ) {
+        MonthGrid(
+            month = visibleMonth,
+            selectedDate = selectedDate,
+            today = today,
+            tasks = tasks,
+            onDateSelected = onDateSelected,
+            modifier = Modifier.pointerInput(visibleMonth) {
+                detectHorizontalDragGestures(
+                    onDragStart = { dragX = 0f },
+                    onHorizontalDrag = { _, amount -> dragX += amount },
+                    onDragEnd = {
+                        if (dragX.absoluteValue > 70f) {
+                            onMonthChange(if (dragX < 0) visibleMonth.plusMonths(1) else visibleMonth.minusMonths(1))
+                        }
+                        dragX = 0f
+                    },
+                    onDragCancel = { dragX = 0f },
+                )
+            },
+        )
+        AgendaPanel(
+            selectedDate = selectedDate,
+            tasks = tasks,
+            filter = filter,
+            onFilterChange = onFilterChange,
+            onFilterClick = onFilterClick,
+            onCreate = onCreate,
+            onOpen = onOpen,
+            onToggleCompletion = onToggleCompletion,
+            onTogglePin = onTogglePin,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .padding(top = 8.dp),
+        )
+    }
+}
+
+@Composable
+private fun MonthGrid(
+    month: YearMonth,
+    selectedDate: LocalDate,
+    today: LocalDate,
+    tasks: List<CalendarTaskItem>,
+    onDateSelected: (LocalDate) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = LuluCalendarTheme.colors
+    val first = month.atDay(1)
+    val firstGridDate = first.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+    val dates = remember(month) { (0L until 42L).map { firstGridDate.plusDays(it) } }
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(316.dp),
+        shape = RoundedCornerShape(LuluCalendarDimens.largeCardRadius),
+        color = colors.surface,
+        border = BorderStroke(1.dp, colors.outline),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 13.dp)) {
+            Row(modifier = Modifier.fillMaxWidth()) {
+                listOf("一", "二", "三", "四", "五", "六", "日").forEach { label ->
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(24.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(label, color = colors.tertiaryInk, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
+            dates.chunked(7).forEach { week ->
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    week.forEach { date ->
+                        CalendarDayCell(
+                            date = date,
+                            inMonth = YearMonth.from(date) == month,
+                            selected = date == selectedDate,
+                            today = date == today,
+                            tasks = tasks.filter { it.occursOn(date) },
+                            onClick = { onDateSelected(date) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CalendarDayCell(
+    date: LocalDate,
+    inMonth: Boolean,
+    selected: Boolean,
+    today: Boolean,
+    tasks: List<CalendarTaskItem>,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = LuluCalendarTheme.colors
+    Column(
+        modifier = modifier
+            .height(43.dp)
+            .clickable(onClick = onClick),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Surface(
+            modifier = Modifier.size(31.dp),
+            shape = CircleShape,
+            color = if (selected) colors.brand else Color.Transparent,
+            contentColor = when {
+                selected -> Color.White
+                !inMonth -> colors.tertiaryInk.copy(alpha = .55f)
+                today -> colors.brand
+                else -> colors.ink
+            },
+            border = if (today && !selected) BorderStroke(1.5.dp, colors.brand) else null,
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    text = date.dayOfMonth.toString(),
+                    fontSize = 13.sp,
+                    fontWeight = if (selected || today) FontWeight.Bold else FontWeight.Medium,
+                )
+            }
+        }
+        Row(
+            modifier = Modifier.height(4.dp),

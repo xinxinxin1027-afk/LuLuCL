@@ -1,0 +1,285 @@
+    }
+}
+
+@Composable
+private fun EditorTopBar(
+    editing: Boolean,
+    onDismiss: () -> Unit,
+    onSave: () -> Unit,
+) {
+    val colors = LuluCalendarTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(64.dp)
+            .background(colors.canvas)
+            .padding(start = 8.dp, end = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        LuluIconButton(
+            icon = Icons.Default.Close,
+            contentDescription = "关闭编辑器",
+            onClick = onDismiss,
+        )
+        Text(
+            text = if (editing) "编辑日程" else "新建日程",
+            color = colors.ink,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 1.dp),
+        )
+        Surface(
+            modifier = Modifier
+                .width(58.dp)
+                .height(44.dp),
+            shape = RoundedCornerShape(13.dp),
+            color = colors.brand,
+            contentColor = Color.White,
+            onClick = onSave,
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text("保存", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+    Divider(color = colors.divider)
+}
+
+@Composable
+private fun EditorTitleCard(
+    state: CalendarEditorState,
+    titleError: Boolean,
+    onStateChange: (CalendarEditorState) -> Unit,
+) {
+    val colors = LuluCalendarTheme.colors
+    EditorCard(borderColor = if (titleError) colors.danger else colors.outline) {
+        BasicTextField(
+            value = state.title,
+            onValueChange = { onStateChange(state.copy(title = it.take(120))) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 15.dp),
+            textStyle = TextStyle(
+                color = colors.ink,
+                fontSize = 20.sp,
+                lineHeight = 27.sp,
+                fontWeight = FontWeight.Bold,
+            ),
+            cursorBrush = SolidColor(colors.brand),
+            singleLine = true,
+            decorationBox = { inner ->
+                if (state.title.isBlank()) {
+                    Text(
+                        text = "日程标题",
+                        color = colors.tertiaryInk,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+                inner()
+            },
+        )
+        EditorDivider(horizontal = 14.dp)
+        BasicTextField(
+            value = state.description,
+            onValueChange = { onStateChange(state.copy(description = it.take(1000))) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dp)
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            textStyle = TextStyle(
+                color = colors.secondaryInk,
+                fontSize = 13.sp,
+                lineHeight = 20.sp,
+            ),
+            cursorBrush = SolidColor(colors.brand),
+            decorationBox = { inner ->
+                if (state.description.isBlank()) {
+                    Text(
+                        text = "添加描述（可选）",
+                        color = colors.tertiaryInk,
+                        fontSize = 13.sp,
+                    )
+                }
+                inner()
+            },
+        )
+    }
+}
+
+@Composable
+private fun EditorCard(
+    borderColor: Color = LuluCalendarTheme.colors.outline,
+    content: @Composable () -> Unit,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        color = LuluCalendarTheme.colors.surface,
+        border = BorderStroke(1.dp, borderColor),
+    ) {
+        Column(content = content)
+    }
+}
+
+@Composable
+private fun EditorRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    hint: String,
+    value: String,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+) {
+    val colors = LuluCalendarTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(58.dp)
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(horizontal = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        EditorIcon(icon)
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 10.dp),
+        ) {
+            Text(label, color = colors.ink, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+            if (hint.isNotBlank()) {
+                Text(
+                    hint,
+                    color = colors.tertiaryInk,
+                    fontSize = 10.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+            }
+        }
+        Text(
+            value,
+            color = if (enabled) colors.secondaryInk else colors.tertiaryInk,
+            fontSize = 12.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+@Composable
+private fun EditorSwitchRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    hint: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    val colors = LuluCalendarTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(58.dp)
+            .padding(horizontal = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        EditorIcon(icon)
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 10.dp),
+        ) {
+            Text(label, color = colors.ink, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+            Text(hint, color = colors.tertiaryInk, fontSize = 10.sp, modifier = Modifier.padding(top = 2.dp))
+        }
+        LuluSwitch(checked = checked, onCheckedChange = onCheckedChange)
+    }
+}
+
+@Composable
+private fun EditorIcon(icon: androidx.compose.ui.graphics.vector.ImageVector) {
+    Surface(
+        modifier = Modifier.size(30.dp),
+        shape = RoundedCornerShape(10.dp),
+        color = LuluCalendarTheme.colors.brandSoft,
+        contentColor = LuluCalendarTheme.colors.brandStrong,
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(icon, contentDescription = null, modifier = Modifier.size(17.dp))
+        }
+    }
+}
+
+@Composable
+private fun EditorDivider(horizontal: androidx.compose.ui.unit.Dp = 14.dp) {
+    Divider(
+        modifier = Modifier.padding(horizontal = horizontal),
+        color = LuluCalendarTheme.colors.divider,
+    )
+}
+
+@Composable
+private fun RepeatWeekdaySelector(
+    selected: Set<DayOfWeek>,
+    onToggle: (DayOfWeek) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 11.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        DayOfWeek.values().forEach { day ->
+            val active = day in selected
+            Surface(
+                modifier = Modifier.size(40.dp),
+                shape = RoundedCornerShape(12.dp),
+                color = if (active) LuluCalendarTheme.colors.brand else LuluCalendarTheme.colors.surface,
+                contentColor = if (active) Color.White else LuluCalendarTheme.colors.secondaryInk,
+                border = BorderStroke(1.dp, if (active) LuluCalendarTheme.colors.brand else LuluCalendarTheme.colors.outline),
+                onClick = { onToggle(day) },
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = day.getDisplayName(JavaTextStyle.NARROW, Locale.CHINA),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReminderEditor(
+    state: CalendarEditorState,
+    onStateChange: (CalendarEditorState) -> Unit,
+) {
+    val start = state.startDateTime
+    val presets = listOf(
+        "准时" to 0L,
+        "10 分钟前" to 10L,
+        "30 分钟前" to 30L,
+        "1 小时前" to 60L,
+        "1 天前" to 1440L,
+    )
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(58.dp)
+                .padding(horizontal = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            EditorIcon(Icons.Default.Notifications)
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 10.dp),
+            ) {
+                Text("提醒", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                Text(

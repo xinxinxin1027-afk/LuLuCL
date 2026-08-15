@@ -1,0 +1,285 @@
+package com.vishal2376.snaptick.presentation.calender_screen
+
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.SubdirectoryArrowRight
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.vishal2376.snaptick.domain.model.TaskSubtask
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle as JavaTextStyle
+import java.util.Locale
+
+private val DateFormatter = DateTimeFormatter.ofPattern("M月d日")
+private val TimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+@Composable
+fun CalendarTaskEditor(
+    state: CalendarEditorState,
+    onStateChange: (CalendarEditorState) -> Unit,
+    onDismiss: () -> Unit,
+    onSave: (CalendarEditorState) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val colors = LuluCalendarTheme.colors
+    var errors by remember(state.id, state.uuid) { mutableStateOf<List<CalendarEditorError>>(emptyList()) }
+
+    BackHandler(onBack = onDismiss)
+
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = colors.canvas,
+        contentColor = colors.ink,
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            EditorTopBar(
+                editing = state.id != 0L,
+                onDismiss = onDismiss,
+                onSave = {
+                    val validation = state.validate()
+                    errors = validation
+                    if (validation.isEmpty()) {
+                        onSave(state.normalized())
+                    } else {
+                        Toast.makeText(context, validation.first().message, Toast.LENGTH_SHORT).show()
+                    }
+                },
+            )
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    start = LuluCalendarDimens.screenHorizontal,
+                    end = LuluCalendarDimens.screenHorizontal,
+                    top = 14.dp,
+                    bottom = 32.dp,
+                ),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                if (errors.isNotEmpty()) {
+                    item(key = "errors") {
+                        EditorErrorBanner(errors = errors)
+                    }
+                }
+                item(key = "title") {
+                    EditorTitleCard(
+                        state = state,
+                        titleError = errors.any { it is CalendarEditorError.TitleRequired || it is CalendarEditorError.TitleTooLong },
+                        onStateChange = onStateChange,
+                    )
+                }
+                item(key = "schedule-label") { LuluSectionLabel("安排") }
+                item(key = "schedule") {
+                    EditorCard {
+                        EditorRow(
+                            icon = Icons.Default.CalendarMonth,
+                            label = "开始日期",
+                            hint = state.startDate.dayOfWeek.getDisplayName(JavaTextStyle.FULL, Locale.CHINA),
+                            value = state.startDate.format(DateFormatter),
+                            onClick = {
+                                showDatePicker(
+                                    context = context,
+                                    current = state.startDate,
+                                    onSelected = { selected ->
+                                        val safeEnd = if (state.endDate < selected) selected else state.endDate
+                                        onStateChange(state.copy(startDate = selected, endDate = safeEnd))
+                                    },
+                                )
+                            },
+                        )
+                        EditorDivider()
+                        EditorRow(
+                            icon = Icons.Default.CalendarMonth,
+                            label = "结束日期",
+                            hint = state.endDate.dayOfWeek.getDisplayName(JavaTextStyle.FULL, Locale.CHINA),
+                            value = state.endDate.format(DateFormatter),
+                            onClick = {
+                                showDatePicker(
+                                    context = context,
+                                    current = state.endDate,
+                                    onSelected = { selected ->
+                                        onStateChange(state.copy(endDate = selected.coerceAtLeast(state.startDate)))
+                                    },
+                                )
+                            },
+                        )
+                        EditorDivider()
+                        EditorRow(
+                            icon = Icons.Default.Schedule,
+                            label = "开始时间",
+                            hint = if (state.allDay) "全天日程" else "24 小时制",
+                            value = if (state.allDay) "00:00" else state.startTime.format(TimeFormatter),
+                            enabled = !state.allDay,
+                            onClick = {
+                                showTimePicker(
+                                    context = context,
+                                    current = state.startTime,
+                                    onSelected = { selected ->
+                                        val adjustedEnd = if (state.endDate == state.startDate && state.endTime <= selected) {
+                                            selected.plusHours(1)
+                                        } else state.endTime
+                                        onStateChange(state.copy(startTime = selected, endTime = adjustedEnd))
+                                    },
+                                )
+                            },
+                        )
+                        EditorDivider()
+                        EditorRow(
+                            icon = Icons.Default.Schedule,
+                            label = "结束时间",
+                            hint = if (state.allDay) "全天日程" else "不得早于开始时间",
+                            value = if (state.allDay) "23:59" else state.endTime.format(TimeFormatter),
+                            enabled = !state.allDay,
+                            onClick = {
+                                showTimePicker(
+                                    context = context,
+                                    current = state.endTime,
+                                    onSelected = { selected ->
+                                        val safeTime = if (state.endDate == state.startDate && selected <= state.startTime) {
+                                            state.startTime.plusHours(1)
+                                        } else selected
+                                        onStateChange(state.copy(endTime = safeTime))
+                                    },
+                                )
+                            },
+                        )
+                        EditorDivider()
+                        EditorSwitchRow(
+                            icon = Icons.Default.CalendarMonth,
+                            label = "全天",
+                            hint = if (state.allDay) "已开启" else "关闭",
+                            checked = state.allDay,
+                            onCheckedChange = { checked ->
+                                onStateChange(
+                                    state.copy(
+                                        allDay = checked,
+                                        startTime = if (checked) LocalTime.MIN else LocalTime.of(9, 0),
+                                        endTime = if (checked) LocalTime.MAX else LocalTime.of(10, 0),
+                                    ),
+                                )
+                            },
+                        )
+                    }
+                }
+                item(key = "repeat-reminder-label") { LuluSectionLabel("提醒与重复") }
+                item(key = "repeat-reminder") {
+                    EditorCard {
+                        EditorSwitchRow(
+                            icon = Icons.Default.Repeat,
+                            label = "重复",
+                            hint = if (state.isRepeated) repeatSummary(state.repeatWeekdays) else "不重复",
+                            checked = state.isRepeated,
+                            onCheckedChange = { checked ->
+                                onStateChange(
+                                    state.copy(
+                                        isRepeated = checked,
+                                        repeatWeekdays = if (checked) state.repeatWeekdays.ifEmpty { setOf(state.startDate.dayOfWeek) } else emptySet(),
+                                    ),
+                                )
+                            },
+                        )
+                        if (state.isRepeated) {
+                            EditorDivider()
+                            RepeatWeekdaySelector(
+                                selected = state.repeatWeekdays,
+                                onToggle = { day ->
+                                    val next = if (day in state.repeatWeekdays) state.repeatWeekdays - day else state.repeatWeekdays + day
+                                    onStateChange(state.copy(repeatWeekdays = next))
+                                },
+                            )
+                        }
+                        EditorDivider()
+                        ReminderEditor(
+                            state = state,
+                            onStateChange = onStateChange,
+                        )
+                    }
+                }
+                item(key = "property-label") { LuluSectionLabel("属性") }
+                item(key = "properties") {
+                    EditorCard {
+                        QuadrantEditor(
+                            selected = state.quadrant,
+                            onSelected = { onStateChange(state.copy(quadrant = it)) },
+                        )
+                        EditorDivider()
+                        ColorEditor(
+                            selected = state.colorHex,
+                            onSelected = { onStateChange(state.copy(colorHex = it)) },
+                        )
+                        EditorDivider()
+                        EditorSwitchRow(
+                            icon = Icons.Default.PushPin,
+                            label = "置顶",
+                            hint = "优先显示在当天列表顶部",
+                            checked = state.isPinned,
+                            onCheckedChange = { onStateChange(state.copy(isPinned = it)) },
+                        )
+                    }
+                }
+                item(key = "subtasks-label") { LuluSectionLabel("子任务") }
+                item(key = "subtasks") {
+                    SubtaskEditor(
+                        subtasks = state.subtasks,
+                        onChange = { onStateChange(state.copy(subtasks = it)) },
+                    )
+                }
+            }
+        }
