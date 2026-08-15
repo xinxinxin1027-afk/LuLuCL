@@ -14,8 +14,8 @@ import java.time.LocalTime
 import java.util.UUID
 
 internal val SudaColors = listOf(
-    "#EF4444", "#F59E0B", "#EAB308", "#10B981",
-    "#06B6D4", "#3B82F6", "#8B5CF6", "#EC4899",
+    "#CF3E70", "#D95F61", "#D49A3B", "#93A85D",
+    "#6E9F82", "#4E9296", "#6287C5", "#8B71BA",
 )
 
 internal data class QuadrantOption(
@@ -26,10 +26,10 @@ internal data class QuadrantOption(
 )
 
 internal val Quadrants = listOf(
-    QuadrantOption(1, "重要紧急", "立刻处理", "#EF4444"),
-    QuadrantOption(2, "重要不急", "计划推进", "#F59E0B"),
-    QuadrantOption(3, "紧急不重", "尽快清掉", "#3B82F6"),
-    QuadrantOption(4, "轻松安排", "慢慢完成", "#10B981"),
+    QuadrantOption(1, "重要紧急", "高价值且时间紧迫", "#D95F61"),
+    QuadrantOption(2, "重要不急", "重要但可提前安排", "#D49A3B"),
+    QuadrantOption(3, "紧急不重", "时间紧但价值较低", "#6287C5"),
+    QuadrantOption(4, "轻松安排", "低压力与日常事项", "#CF3E70"),
 )
 
 internal data class CalendarEditorState(
@@ -42,7 +42,7 @@ internal data class CalendarEditorState(
     val allDay: Boolean = true,
     val endDate: LocalDate? = null,
     val endTime: LocalTime? = null,
-    val colorHex: String = "#10B981",
+    val colorHex: String = "#CF3E70",
     val quadrant: Int = 4,
     val isPinned: Boolean = false,
     val reminders: List<LocalDateTime> = emptyList(),
@@ -127,10 +127,10 @@ internal fun CalendarEditorState.reminderOffsets(): List<Int> {
     val anchor = LocalDateTime.of(startDate, if (allDay) LocalTime.MIDNIGHT else startTime)
     return reminders
         .map { Duration.between(it, anchor).toMinutes().toInt() }
+        .filter { it >= 0 }
         .distinct()
         .sorted()
 }
-
 
 internal fun String.toComposeColor(fallback: Color): Color = runCatching {
     Color(AndroidColor.parseColor(this))
